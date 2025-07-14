@@ -8,7 +8,16 @@ public class LyraStudy : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+            "Core", 
+            "CoreUObject", 
+            "Engine", 
+            "InputCore", 
+            // GAS,
+            "GameplayTags",
+            // GameFeature,
+            "ModularGameplay",
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 

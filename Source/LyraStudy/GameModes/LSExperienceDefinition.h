@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "LyraStudy/Charactor/LSPawnData.h"
+#include "LyraStudy/Character/LSPawnData.h"
 #include "LSExperienceDefinition.generated.h"
 
 /**

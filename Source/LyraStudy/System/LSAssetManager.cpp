@@ -2,7 +2,7 @@
 
 
 #include "LyraStudy/LSLogChannels.h"
-#include "LSAssetManager.h"
+#include "System/LSAssetManager.h"
 
 ULSAssetManager::ULSAssetManager()
 {
