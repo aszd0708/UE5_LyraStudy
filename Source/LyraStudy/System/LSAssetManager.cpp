@@ -3,6 +3,7 @@
 
 #include "LyraStudy/LSLogChannels.h"
 #include "System/LSAssetManager.h"
+#include "LSGameplayTags.h"
 
 ULSAssetManager::ULSAssetManager()
 {
@@ -35,6 +36,8 @@ PRAGMA_DISABLE_OPTIMIZATION
 void ULSAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
+
+	FLSGameplayTags::Get().InitializeNativeTags();
 }
 PRAGMA_ENABLE_OPTIMIZATION
 

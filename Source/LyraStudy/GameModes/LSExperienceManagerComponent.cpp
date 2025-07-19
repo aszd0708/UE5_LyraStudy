@@ -37,7 +37,7 @@ void ULSExperienceManagerComponent::ServerSetCurrentExperience(FPrimaryAssetId E
 		AssetClass = Cast<UClass>(AssetPath.TryLoad());
 	}
 
-	// 왜 CDO를 가져올까
+	// 왜 CDO(Class Default Object)를 가져올까
 	const ULSExperienceDefinition* Experience = GetDefault<ULSExperienceDefinition>(AssetClass);
 	check(Experience != nullptr);
 	check(CurrentExperience == nullptr);
