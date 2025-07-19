@@ -17,4 +17,7 @@ class LYRASTUDY_API ULSPawnData : public UPrimaryDataAsset
 public:
 	ULSPawnData(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
+	/* Pawn¿« Class*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "LS|Pawn")
+	TSubclassOf<APawn> PawnClass;
 };

@@ -17,6 +17,7 @@ public class LyraStudy : ModuleRules
             "GameplayTags",
             // GameFeature,
             "ModularGameplay",
+            "GameFeatures",
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

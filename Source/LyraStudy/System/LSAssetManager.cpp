@@ -31,6 +31,13 @@ bool ULSAssetManager::ShouldLogAssetLoads()
 	return bLogAssetLoads;
 }
 
+PRAGMA_DISABLE_OPTIMIZATION
+void ULSAssetManager::StartInitialLoading()
+{
+	Super::StartInitialLoading();
+}
+PRAGMA_ENABLE_OPTIMIZATION
+
 UObject* ULSAssetManager::SynchronousLoadAsset(const FSoftObjectPath& AssetPath)
 {
 	// 해당 함수를 따로 만든 이유는 ' synchronous load asset이 불필요하게 하는 것이 없는지 확인하기 위함.

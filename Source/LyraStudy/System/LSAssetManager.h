@@ -24,6 +24,8 @@ public:
 	- 굳이 클론코딩할 필요 없지만, 알아두면 좋은 점들이 많다.
 	*/
 	static bool ShouldLogAssetLoads();
+
+	virtual void StartInitialLoading() override;
 	
 	static UObject* SynchronousLoadAsset(const FSoftObjectPath& AssetPath);
 

@@ -6,6 +6,7 @@
 #include "Components/GameStateComponent.h"
 #include "LSExperienceManagerComponent.generated.h"
 
+struct FPrimaryAssetId;
 class ULSExperienceDefinition;
 
 enum class ELSExperienceLoadState
@@ -31,12 +32,19 @@ public:
 	/*
 	* memeber methods
 	*/
-	bool IsExperienceLoaded() { return (LoadState == ELSExperienceLoadState::Loading) && (CurrentExperience != nullptr); }
+	bool IsExperienceLoaded() { return (LoadState == ELSExperienceLoadState::Loaded) && (CurrentExperience != nullptr); }
 
 	/*
 	* 아래의 OnExperienceLoaded에 바인딩 하거나, 이미 Experience 로딩이 완료 되었다면 바로 호출함
 	*/
 	void CallOrRegister_OnExperiencedLoaded(FOnLSExperienceLoaded::FDelegate&& Delegate);
+
+	void ServerSetCurrentExperience(FPrimaryAssetId ExperienceId);
+
+	void StartExperienceLoad();
+	void OnExperienceLoadComplete();
+	void OnExperienceFullLoadCompleted();
+	const ULSExperienceDefinition* GetCurrentExperienceChecked();
 
 public:
 	UPROPERTY()
