@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "LSCharacter.generated.h"
 
+class ULSPawnExtensionComponent;
+
 UCLASS()
 class LYRASTUDY_API ALSCharacter : public ACharacter
 {
@@ -26,4 +28,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LS|Character")
+	TObjectPtr<ULSPawnExtensionComponent> PawnExtComponent;
 };

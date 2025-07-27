@@ -10,6 +10,7 @@
 #include "Player/LSPlayerState.h"
 #include "Character/LSCharacter.h"
 #include "Character/LSPawnData.h"
+#include "Character/LSPawnExtensionComponent.h"
 
 ALSGameModeBase::ALSGameModeBase()
 {
@@ -66,8 +67,29 @@ PRAGMA_ENABLE_OPTIMIZATION
 
 APawn* ALSGameModeBase::SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform)
 {
-	UE_LOG(LogLS, Log, TEXT("SpawnDefaultPawnAtTransform_Implementation is called!"));
-	return Super::SpawnDefaultPawnAtTransform_Implementation(NewPlayer, SpawnTransform);
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Instigator = GetInstigator();
+	SpawnInfo.ObjectFlags |= RF_Transient;
+	SpawnInfo.bDeferConstruction = true;
+
+	if (UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer))
+	{
+		if (APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo))
+		{
+			// FindPawnExtensionComponent ±¸Çö
+			if (ULSPawnExtensionComponent* PawnExtComp = ULSPawnExtensionComponent::FindPawnExtensionComponent(SpawnedPawn))
+			{
+				if (const ULSPawnData* PawnData = GetPawnDataForController(NewPlayer)) 
+				{
+					PawnExtComp->SetPawnData(PawnData);
+				}
+			}
+			SpawnedPawn->FinishSpawning(SpawnTransform);
+			return SpawnedPawn;
+		}
+	}
+
+	return nullptr;
 }
 
 void ALSGameModeBase::HandleMatchAssignmentIfNotExpectingOne()

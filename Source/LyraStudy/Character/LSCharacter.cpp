@@ -2,13 +2,16 @@
 
 
 #include "Character/LSCharacter.h"
+#include "LSPawnExtensionComponent.h"
 
-// Sets default values
 ALSCharacter::ALSCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	// Tick을 비활성화
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bCanEverTick = false;
 
+	// PawnExtentionComponent 생성
+	PawnExtComponent = CreateDefaultSubobject<ULSPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -30,5 +33,8 @@ void ALSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// Pawn이 Possess로서, Controller와 PlayerState 정보 접근이 가능한 샅애가 되었음:
+	// - SetupPlayerInputComponent 확인
+	PawnExtComponent->SetupPlayerInputComponent();
 }
 
