@@ -2,12 +2,14 @@
 
 
 #include "Character/LSHeroComponent.h"
+#include "UObject/UObjectGlobals.h"
 #include "LSLogChannels.h"
 #include "Character/LSPawnExtensionComponent.h"
 #include "Character/LSPawnData.h"
 #include "LSGameplayTags.h"
 #include "Player/LSPlayerState.h"
 #include "Components/GameFrameworkComponentManager.h"
+#include "Camera/LSCameraComponent.h"
 
 /* FeatureName 정의  : static member vaiable 초기화 */
 const FName ULSHeroComponent::NAME_ActorFeatureName("Hero");
@@ -137,6 +139,15 @@ void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Man
 		{
 			PawnData = PawnExtComp->GetPawnData<ULSPawnData>();
 		}
+
+		if (bIsLocallyController && PawnData)
+		{
+			// 현재 LSCharacter에 Attach된 CameraComponent를 찾음
+			if (ULSCameraComponent* CameraComponent = ULSCameraComponent::FindCameraComponent(Pawn))
+			{
+				CameraComponent->DeterminCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
+			}
+		}
 	}
 }
 
@@ -149,3 +160,23 @@ void ULSHeroComponent::CheckDefaultInitialization()
 	static const TArray<FGameplayTag> StateChain = { InitTags.InitState_Spawned, InitTags.InitState_DataAvailable, InitTags.InitState_DataInitialized, InitTags.InitState_GameplayReady };
 	ContinueInitStateChain(StateChain);
 }
+
+PRAGMA_DISABLE_OPTIMIZATION
+TSubclassOf<ULSCameraMode> ULSHeroComponent::DetermineCameraMode() const
+{
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return nullptr;
+	}
+
+	if (ULSPawnExtensionComponent* PawnExtComp = ULSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	{
+		if (const ULSPawnData* PawnData = PawnExtComp->GetPawnData<ULSPawnData>())
+		{
+			return PawnData->DefaultCameraMode;
+		}
+	}
+	return nullptr;
+}
+PRAGMA_ENABLE_OPTIMIZATION

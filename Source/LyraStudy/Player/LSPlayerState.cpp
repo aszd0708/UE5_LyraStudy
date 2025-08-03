@@ -15,7 +15,7 @@ void ALSPlayerState::PostInitializeComponents()
 	ULSExperienceManagerComponent* ExperienceManagerComponent = GameState->FindComponentByClass<ULSExperienceManagerComponent>();
 	check(ExperienceManagerComponent);
 
-	ExperienceManagerComponent->CallOrRegister_OnExperiencedLoaded(FOnLSExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
+	ExperienceManagerComponent->CallOrRegister_OnExperienceLoaded(FOnLSExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
 }
 
 void ALSPlayerState::OnExperienceLoaded(const ULSExperienceDefinition* CurrentExperience)

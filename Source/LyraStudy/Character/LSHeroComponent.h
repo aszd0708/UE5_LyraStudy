@@ -7,6 +7,8 @@
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "LSHeroComponent.generated.h"
 
+class ULSCameraMode;
+
 /**
  * 카메라, 입력 등 플레이어가 제어하는 시스템의 초기화를 처리하는 컴포넌트
  */
@@ -36,4 +38,7 @@ public:
 	virtual bool CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const final;
 	virtual void HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) final;
 	virtual void CheckDefaultInitialization() final;
+
+	/* member methods */
+	TSubclassOf<ULSCameraMode> DetermineCameraMode() const;
 };

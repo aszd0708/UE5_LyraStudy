@@ -3,6 +3,7 @@
 
 #include "Character/LSCharacter.h"
 #include "LSPawnExtensionComponent.h"
+#include "Camera/LSCameraComponent.h"
 
 ALSCharacter::ALSCharacter()
 {
@@ -12,6 +13,12 @@ ALSCharacter::ALSCharacter()
 
 	// PawnExtentionComponent 持失
 	PawnExtComponent = CreateDefaultSubobject<ULSPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
+
+	// CameraComponent 持失
+	{
+		CameraComponent = CreateDefaultSubobject<ULSCameraComponent>(TEXT("CameraComponent"));
+		CameraComponent->SetRelativeLocation(FVector(-300.0f, 0.0f, 75.0f));
+	}
 }
 
 // Called when the game starts or when spawned

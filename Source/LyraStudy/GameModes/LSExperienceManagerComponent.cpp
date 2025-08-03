@@ -6,7 +6,7 @@
 #include "System/LSAssetManager.h"
 #include "LSExperienceDefinition.h"
 
-void ULSExperienceManagerComponent::CallOrRegister_OnExperiencedLoaded(FOnLSExperienceLoaded::FDelegate&& Delegate)
+void ULSExperienceManagerComponent::CallOrRegister_OnExperienceLoaded(FOnLSExperienceLoaded::FDelegate&& Delegate)
 {
 	// IsExperienceLoaded() ±¸Çö
 	if (IsExperienceLoaded())

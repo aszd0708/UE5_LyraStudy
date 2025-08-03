@@ -38,7 +38,7 @@ void ALSGameModeBase::InitGameState()
 	check(ExperienceManagerComponent);
 
 	// OnExperienceLoaded µî·Ï
-	ExperienceManagerComponent->CallOrRegister_OnExperiencedLoaded(FOnLSExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
+	ExperienceManagerComponent->CallOrRegister_OnExperienceLoaded(FOnLSExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
 }
 
 UClass* ALSGameModeBase::GetDefaultPawnClassForController_Implementation(AController* InController)

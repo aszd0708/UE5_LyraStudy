@@ -14,4 +14,6 @@ class LYRASTUDY_API ALSPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
+public:
+	ALSPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 };

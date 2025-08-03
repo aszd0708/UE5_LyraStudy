@@ -7,6 +7,7 @@
 #include "LSCharacter.generated.h"
 
 class ULSPawnExtensionComponent;
+class ULSCameraComponent;
 
 UCLASS()
 class LYRASTUDY_API ALSCharacter : public ACharacter
@@ -31,4 +32,8 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LS|Character")
 	TObjectPtr<ULSPawnExtensionComponent> PawnExtComponent;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LS|Character")
+	TObjectPtr<ULSCameraComponent> CameraComponent;
 };
