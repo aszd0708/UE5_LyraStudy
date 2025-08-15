@@ -5,6 +5,7 @@
 #include "GameFeaturesSubsystemSettings.h"
 #include "System/LSAssetManager.h"
 #include "LSExperienceDefinition.h"
+#include "LSLogChannels.h"
 
 void ULSExperienceManagerComponent::CallOrRegister_OnExperienceLoaded(FOnLSExperienceLoaded::FDelegate&& Delegate)
 {
@@ -124,6 +125,7 @@ void ULSExperienceManagerComponent::OnExperienceLoadComplete()
 
 void ULSExperienceManagerComponent::OnExperienceFullLoadCompleted()
 {
+	UE_LOG(LogLS, Error, TEXT("ULSExperienceManagerComponent::OnExperienceFullLoadCompleted"));
 	check(LoadState != ELSExperienceLoadState::Loaded);
 
 	LoadState = ELSExperienceLoadState::Loaded;

@@ -11,7 +11,7 @@
 #include "Components/GameFrameworkComponentManager.h"
 #include "Camera/LSCameraComponent.h"
 
-/* FeatureName Á¤ÀÇ  : static member vaiable ÃÊ±âÈ­ */
+/* FeatureName ì •ì˜  : static member vaiable ì´ˆê¸°í™” */
 const FName ULSHeroComponent::NAME_ActorFeatureName("Hero");
 
 ULSHeroComponent::ULSHeroComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -24,7 +24,7 @@ void ULSHeroComponent::OnRegister()
 {
 	Super::OnRegister();
 
-	// ¿Ã¹Ù¸¥ Actor¿¡ µî·ÏµÇ¾ú´ÂÁö È®ÀÎ
+	// ì˜¬ë°”ë¥¸ Actorì— ë“±ë¡ë˜ì—ˆëŠ”ì§€ í™•ì¸
 	{
 		if (!GetPawn<APawn>())
 		{
@@ -39,14 +39,14 @@ void ULSHeroComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// PawnExtensionComponent¿¡ ´ëÇØ¼­ (PawnExtension Feature) OnActorInitStateChanged() °üÂûÇÏµµ·Ï (Observing)
+	// PawnExtensionComponentì— ëŒ€í•´ì„œ (PawnExtension Feature) OnActorInitStateChanged() ê´€ì°°í•˜ë„ë¡ (Observing)
 	BindOnActorInitStateChanged(ULSPawnExtensionComponent::NAME_ActorFeatureName, FGameplayTag(), false);
 	
-	// InitState_Spawned·Î ÃÊ±âÈ­
+	// InitState_Spawnedë¡œ ì´ˆê¸°í™”
 	ensure(TryToChangeInitState(FLSGameplayTags::Get().InitState_Spawned));
 
-	// ForceUpdate ÁøÇà
-	CheckDefaultInitialization();
+	// ForceUpdate ì§„í–‰
+	//CheckDefaultInitialization();
 }
 
 void ULSHeroComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -59,11 +59,12 @@ void ULSHeroComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ULSHeroComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
 {
+	UE_LOG(LogLS, Error, TEXT("ULSHeroComponent::OnActorInitStateChanged FeatureState : %s"), *Params.FeatureState.ToString());
 	const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
 	if (Params.FeatureName == ULSPawnExtensionComponent::NAME_ActorFeatureName)
 	{
-		// LSPawnExtensionComponentÀÇ DataInitialized »óÅÂ º¯È­ °üÂû ÈÄ, LSHeroComponentµµ DataInitialized»óÅÂ·Î º¯°æ
-		// - CanChangeInitState È®ÀÎ
+		// LSPawnExtensionComponentì˜ DataInitialized ìƒíƒœ ë³€í™” ê´€ì°° í›„, LSHeroComponentë„ DataInitializedìƒíƒœë¡œ ë³€ê²½
+		// - CanChangeInitState í™•ì¸
 		if (Params.FeatureState == InitTags.InitState_DataInitialized)
 		{
 			CheckDefaultInitialization();
@@ -73,16 +74,21 @@ void ULSHeroComponent::OnActorInitStateChanged(const FActorInitStateChangedParam
 
 bool ULSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
 {
+	UE_LOG(LogLS, Error, TEXT("ULSHeroComponent::CanChangeInitState CurrentState : %s"), *CurrentState.ToString());
 	check(Manager);
 
 	const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
 	APawn* Pawn = GetPawn<APawn>();
 	ALSPlayerState* LSPS = GetPlayerState<ALSPlayerState>();
 
-	// Spawned ÃÊ±âÈ­
+	// Spawned ì´ˆê¸°í™”
 	if (!CurrentState.IsValid() && DesiredState == InitTags.InitState_Spawned)
 	{
-		// PawnÀÌ Àß ¼¼ÆÃ¸¸ µÇ¾îÀÖÀ¸¸é ¹Ù·Î Spawned·Î ³Ñ¾î°¨
+		// Pawnì´ ì˜ ì„¸íŒ…ë§Œ ë˜ì–´ìˆìœ¼ë©´ ë°”ë¡œ Spawnedë¡œ ë„˜ì–´ê°
+		if (!Pawn)
+		{
+			UE_LOG(LogLS, Error, TEXT("Pawn Is Null"));
+		}
 		if (Pawn)
 		{
 			return true;
@@ -94,6 +100,11 @@ bool ULSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manage
 	{
 		if (!LSPS)
 		{
+			UE_LOG(LogLS, Error, TEXT("CurrentState == InitTags.InitState_Spawned LSPS Is Null"));
+		}
+
+		if (!LSPS)
+		{
 			return false;
 		}
 
@@ -103,8 +114,13 @@ bool ULSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manage
 	// DataAvailable -> DataInitialized
 	if (CurrentState == InitTags.InitState_DataAvailable && DesiredState == InitTags.InitState_DataInitialized)
 	{
-		// PawnExtensionComponent°¡ DataInitialized µÉ ¶§±îÁö ±â´Ù¸² (== ¸ğµç Feature Component°¡ DataAvailableÀÎ »óÅÂ)
-		return Manager->HasFeatureReachedInitState(Pawn, ULSPawnExtensionComponent::NAME_ActorFeatureName, InitTags.InitState_DataInitialized);
+		// PawnExtensionComponentê°€ DataInitialized ë  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¼ (== ëª¨ë“  Feature Componentê°€ DataAvailableì¸ ìƒíƒœ)
+		// ì§„ë‹¨ ê²°ê³¼, Manager->HasFeatureReachedInitState() í˜¸ì¶œì€ RaceConditionì„ ìœ ë°œí•˜ë¯€ë¡œ, OnActorInitStateChanged Delegateê°€ í˜¸ì¶œëœ ê²ƒ ìì²´ë¥¼ ì‹ ë¢°í•©ë‹ˆë‹¤.
+		if (!LSPS)
+		{
+			UE_LOG(LogLS, Error, TEXT("CurrentState == InitTags.InitState_DataAvailable LSPS Is Null"));
+		}
+		return LSPS != nullptr;
 	}
 
 	// DataInitialized -> GameplayReady
@@ -113,15 +129,17 @@ bool ULSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manage
 		return true;
 	}
 
-	// À§ÀÇ ¼±ÇüÀûÀÎ transitionÀÌ ¾Æ´Ï¸é false;
+	// ìœ„ì˜ ì„ í˜•ì ì¸ transitionì´ ì•„ë‹ˆë©´ false;
 	return false;
 }
 
 void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
 {
+	UE_LOG(LogLS, Error, TEXT("ULSHeroComponent::HandleChangeInitState CurrentState : %s"), *CurrentState.ToString());
+
 	const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
 
-	// DataAvailable -> DataInitialized ´Ü°è
+	// DataAvailable -> DataInitialized ë‹¨ê³„
 	if (CurrentState == InitTags.InitState_DataAvailable && DesiredState == InitTags.InitState_DataInitialized)
 	{
 		APawn* Pawn = GetPawn<APawn>();
@@ -131,7 +149,7 @@ void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Man
 			return;
 		}
 
-		// Input°ú Camera¿¡ ´ëÇÑ ÇÚµé¸µ (TODO)
+		// Inputê³¼ Cameraì— ëŒ€í•œ í•¸ë“¤ë§ (TODO)
 
 		const bool bIsLocallyController = Pawn->IsLocallyControlled();
 		const ULSPawnData* PawnData = nullptr;
@@ -142,7 +160,7 @@ void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Man
 
 		if (bIsLocallyController && PawnData)
 		{
-			// ÇöÀç LSCharacter¿¡ AttachµÈ CameraComponent¸¦ Ã£À½
+			// í˜„ì¬ LSCharacterì— Attachëœ CameraComponentë¥¼ ì°¾ìŒ
 			if (ULSCameraComponent* CameraComponent = ULSCameraComponent::FindCameraComponent(Pawn))
 			{
 				CameraComponent->DeterminCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
@@ -153,9 +171,9 @@ void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Man
 
 void ULSHeroComponent::CheckDefaultInitialization()
 {
-	// ¾Õ¼­ BindOnActorInitStateChanged¿¡¼­ º¸¾ÒµíÀÌ Hero Feature´Â Pawn Extension Feature¿¡ Á¾¼ÓµÇ¾î ÀÕÀ¸¹Ç·Î, CheckDefaultInitializationForImplementers È£ÃâÇÏÁö ¾ÊÀ½.
+	// ì•ì„œ BindOnActorInitStateChangedì—ì„œ ë³´ì•˜ë“¯ì´ Hero FeatureëŠ” Pawn Extension Featureì— ì¢…ì†ë˜ì–´ ì‡ìœ¼ë¯€ë¡œ, CheckDefaultInitializationForImplementers í˜¸ì¶œí•˜ì§€ ì•ŠìŒ.
 
-	// ContinueInitStateChainÀº ¾Õ¼­ PawnExtComponent¿Í °°À½
+	// ContinueInitStateChainì€ ì•ì„œ PawnExtComponentì™€ ê°™ìŒ
 	const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
 	static const TArray<FGameplayTag> StateChain = { InitTags.InitState_Spawned, InitTags.InitState_DataAvailable, InitTags.InitState_DataInitialized, InitTags.InitState_GameplayReady };
 	ContinueInitStateChain(StateChain);

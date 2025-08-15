@@ -6,8 +6,8 @@
 #include "LSLogChannels.h"
 #include "LSGameplayTags.h"
 
-/* feature Name À» component ´ÜÀ§´Ï±ñ component¸¦ »©°í, pawn extension¸¸ ³ÖÀ» °ÍÀ» È®ÀÎ ÇÒ ¼ö ÀÖ´Ù. */
-const FName ULSPawnExtensionComponent::NAME_ActorFeatureName("PawnExtention");
+/* feature Name ì„ component ë‹¨ìœ„ë‹ˆê¹ componentë¥¼ ë¹¼ê³ , pawn extensionë§Œ ë„£ì„ ê²ƒì„ í™•ì¸ í•  ìˆ˜ ìˆë‹¤. */
+const FName ULSPawnExtensionComponent::NAME_ActorFeatureName("PawnExtension");
 
 ULSPawnExtensionComponent::ULSPawnExtensionComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -17,7 +17,7 @@ ULSPawnExtensionComponent::ULSPawnExtensionComponent(const FObjectInitializer& O
 
 void ULSPawnExtensionComponent::SetPawnData(const ULSPawnData* InPawnData)
 {
-	// Pawn¿¡ ´ëÇØ Authority°¡ ¾øÀ» °æ¿ì, SetPawnData´Â ÁøÇàÇÏÁö ¾ÊÀ½
+	// Pawnì— ëŒ€í•´ Authorityê°€ ì—†ì„ ê²½ìš°, SetPawnDataëŠ” ì§„í–‰í•˜ì§€ ì•ŠìŒ
 	APawn* Pawn = GetPawnChecked<APawn>();
 	if (Pawn->GetLocalRole() != ROLE_Authority)
 	{
@@ -29,13 +29,13 @@ void ULSPawnExtensionComponent::SetPawnData(const ULSPawnData* InPawnData)
 		return;
 	}
 
-	// PawnData ¾÷µ¥ÀÌÆ®
+	// PawnData ì—…ë°ì´íŠ¸
 	PawnData = InPawnData;
 }
 
 void ULSPawnExtensionComponent::SetupPlayerInputComponent()
 {
-	// ForceUpdate·Î ´Ù½Ã InitState »óÅÂ¸éÈ¯ ½ÃÀÛ
+	// ForceUpdateë¡œ ë‹¤ì‹œ InitState ìƒíƒœë©´í™˜ ì‹œì‘
 	CheckDefaultInitialization();
 }
 
@@ -43,7 +43,7 @@ void ULSPawnExtensionComponent::OnRegister()
 {
 	Super::OnRegister();
 
-	// ¿Ã¹Ù¸¥ Actor¿¡ µî·ÏµÇ¾ú´ÂÁö È®ÀÎ.
+	// ì˜¬ë°”ë¥¸ Actorì— ë“±ë¡ë˜ì—ˆëŠ”ì§€ í™•ì¸.
 	{
 		if (!GetPawn<APawn>())
 		{
@@ -51,12 +51,12 @@ void ULSPawnExtensionComponent::OnRegister()
 		}
 	}
 
-	// GameFrameworkComponentManager ¿¡ InitState »ç¿ëÀ» À§ÇØ µî·Ï ÁøÇà:
-	// - µî·ÏÀº »ó¼Ó¹Ş¾Ò´ø IGameFrameworkInitStateInterface ¸Ş¼­µå RegisterInitStateFeature()¸¦ È°¿ë
-	// - ÇØ´ç ÇÔ¼ö¸¦ °£´ÜÈ÷ º¸±â
+	// GameFrameworkComponentManager ì— InitState ì‚¬ìš©ì„ ìœ„í•´ ë“±ë¡ ì§„í–‰:
+	// - ë“±ë¡ì€ ìƒì†ë°›ì•˜ë˜ IGameFrameworkInitStateInterface ë©”ì„œë“œ RegisterInitStateFeature()ë¥¼ í™œìš©
+	// - í•´ë‹¹ í•¨ìˆ˜ë¥¼ ê°„ë‹¨íˆ ë³´ê¸°
 	RegisterInitStateFeature();
 
-	// µğ¹ö±ëÀ» À§ÇÑ ÇÔ¼ö
+	// ë””ë²„ê¹…ì„ ìœ„í•œ í•¨ìˆ˜
 	UGameFrameworkComponentManager* Manager = UGameFrameworkComponentManager::GetForActor(GetOwningActor());
 }
 
@@ -64,30 +64,30 @@ void ULSPawnExtensionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// FeatureName¿¡ NAME_NoneÀ» ³ÖÀ¸¸é, Actor¿¡ µî·ÏµÈ ¸ğµç Feature ComponentÀÇ InitState¸¦ °üÂûÇÏ°Ú´Ù´Â ÀÇ¹Ì
+	// FeatureNameì— NAME_Noneì„ ë„£ìœ¼ë©´, Actorì— ë“±ë¡ëœ ëª¨ë“  Feature Componentì˜ InitStateë¥¼ ê´€ì°°í•˜ê² ë‹¤ëŠ” ì˜ë¯¸
 	BindOnActorInitStateChanged(NAME_None, FGameplayTag(), false);
 
 	/*
-	* InitState_Spawned·Î »óÅÂ º¯È¯
-	* -TryToChangeInitState´Â ¾Æ·¡¿Í °°ÀÌ ÁøÇà
-	* 1. CanChangeInitState·Î »óÅÂ º¯È¯ °¡´É¼º À¯¹« ÆÇ´Ü
-	* 2. HandleChangeInitState·Î ³»ºÎ »óÅÂ º¯°æ (Feature Component)
-	* 3. BindOnActorInitStateChanged·Î BindµÈ Delegate¸¦ Á¶°Ç¿¡ ¸Â°Ô È£Ãâ
-	*    - LSPawnExtensionComponentÀÇ °æ¿ì ¸ğµç Actor ÀÇ Feature »óÅÂ º¯È­¿¡ ´ëÇØ OnActorInitStateChanged() °¡ È£ÃâµÊ
+	* InitState_Spawnedë¡œ ìƒíƒœ ë³€í™˜
+	* -TryToChangeInitStateëŠ” ì•„ë˜ì™€ ê°™ì´ ì§„í–‰
+	* 1. CanChangeInitStateë¡œ ìƒíƒœ ë³€í™˜ ê°€ëŠ¥ì„± ìœ ë¬´ íŒë‹¨
+	* 2. HandleChangeInitStateë¡œ ë‚´ë¶€ ìƒíƒœ ë³€ê²½ (Feature Component)
+	* 3. BindOnActorInitStateChangedë¡œ Bindëœ Delegateë¥¼ ì¡°ê±´ì— ë§ê²Œ í˜¸ì¶œ
+	*    - LSPawnExtensionComponentì˜ ê²½ìš° ëª¨ë“  Actor ì˜ Feature ìƒíƒœ ë³€í™”ì— ëŒ€í•´ OnActorInitStateChanged() ê°€ í˜¸ì¶œë¨
 	*/
 	ensure(TryToChangeInitState(FLSGameplayTags::Get().InitState_Spawned));
 	
 	/*
-	* ÇØ´ç ÇÔ¼ö¸¦ ¿À¹ö¶óÀÌµù ÇÑ´Ù
-	* - ÀÌ ÇÔ¼ö¸¦ ForceUpdateInitState¿Í °°Àº ´À³¦À¸·Î ÀÌÇØÇØÁÖ¸é µÈ´Ù
-	* - ÇöÀç °­Á¦ ¾÷µ¥ÀÌÆ®¸¦ ÁøÇà (¹°·Ğ CanChangedInitState¿Í HandleChangeInitState¸¦ ÁøÇàÇØÁÜ)
+	* í•´ë‹¹ í•¨ìˆ˜ë¥¼ ì˜¤ë²„ë¼ì´ë”© í•œë‹¤
+	* - ì´ í•¨ìˆ˜ë¥¼ ForceUpdateInitStateì™€ ê°™ì€ ëŠë‚Œìœ¼ë¡œ ì´í•´í•´ì£¼ë©´ ëœë‹¤
+	* - í˜„ì¬ ê°•ì œ ì—…ë°ì´íŠ¸ë¥¼ ì§„í–‰ (ë¬¼ë¡  CanChangedInitStateì™€ HandleChangeInitStateë¥¼ ì§„í–‰í•´ì¤Œ)
 	*/ 
 	CheckDefaultInitialization();
 }
 
 void ULSPawnExtensionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	// ¾Õ¼­, OnRegisterÀÇ RegisterInitStateFeature()ÀÇ ½ÖÀ» ¸ÂÃçÁÖÀÚ
+	// ì•ì„œ, OnRegisterì˜ RegisterInitStateFeature()ì˜ ìŒì„ ë§ì¶°ì£¼ì
 	UnregisterInitStateFeature();
 
 	Super::EndPlay(EndPlayReason);
@@ -95,10 +95,11 @@ void ULSPawnExtensionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason
 
 void ULSPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
 {
+	UE_LOG(LogLS, Error, TEXT("ULSPawnExtensionComponent::OnActorInitStateChanged FeatureState : %s"), *Params.FeatureState.ToString());
 	if (Params.FeatureName != NAME_ActorFeatureName)
 	{
-		// LSPawnExtenstionComponent´Â ´Ù¸¥ Feature ComponentµéÀÇ »óÅÂ°¡ DataVailableÀ» °üÂûÇÏ¿©, Sync¸¦ ¸ÂÃß´Â ±¸°£ÀÌ ÀÖ¾ú´Ù (CanChangeInitState)
-		// - ÀÌ¸¦ °¡´ÉÇÏ°Ô ÇÏ±â À§ÇØ, OnActorInitStateChanged¿¡¼­´Â DataAvailable¿¡ ´ëÇØ Áö¼ÓÀûÀ¸·Î CheckDefaultInitializationÀ» È£ÃâÇÏ¿©, »óÅÂ¸¦ È®ÀÎÇÑ´Ù
+		// LSPawnExtenstionComponentëŠ” ë‹¤ë¥¸ Feature Componentë“¤ì˜ ìƒíƒœê°€ DataVailableì„ ê´€ì°°í•˜ì—¬, Syncë¥¼ ë§ì¶”ëŠ” êµ¬ê°„ì´ ìˆì—ˆë‹¤ (CanChangeInitState)
+		// - ì´ë¥¼ ê°€ëŠ¥í•˜ê²Œ í•˜ê¸° ìœ„í•´, OnActorInitStateChangedì—ì„œëŠ” DataAvailableì— ëŒ€í•´ ì§€ì†ì ìœ¼ë¡œ CheckDefaultInitializationì„ í˜¸ì¶œí•˜ì—¬, ìƒíƒœë¥¼ í™•ì¸í•œë‹¤
 		const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
 		if (Params.FeatureState == InitTags.InitState_DataAvailable)
 		{
@@ -109,15 +110,19 @@ void ULSPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateCha
 
 bool ULSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
 {
+	UE_LOG(LogLS, Error, TEXT("====================================================================================="));
+	UE_LOG(LogLS, Error, TEXT("ULSPawnExtensionComponent::CanChangeInitState CurrentState : %s"), *CurrentState.ToString());
+	UE_LOG(LogLS, Error, TEXT("ULSPawnExtensionComponent::CanChangeInitState DesiredState : %s"), *DesiredState.ToString());
+	UE_LOG(LogLS, Error, TEXT("====================================================================================="));
 	check(Manager);
 
 	APawn* Pawn = GetPawn<APawn>();
 	const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
 
-	// InitState_Spawned ÃÊ±âÈ­
+	// InitState_Spawned ì´ˆê¸°í™”
 	if (!CurrentState.IsValid() && DesiredState == InitTags.InitState_Spawned)
 	{
-		// PawnÀÌ Àß ¼¼ÆÃ¸¸ µÇ¾îÀÖÀ¸¸é ¹Ù·Î Spawned·Î ³Ñ¾î°¨
+		// Pawnì´ ì˜ ì„¸íŒ…ë§Œ ë˜ì–´ìˆìœ¼ë©´ ë°”ë¡œ Spawnedë¡œ ë„˜ì–´ê°
 		if (Pawn)
 		{
 			return true;
@@ -127,13 +132,14 @@ bool ULSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManage
 	// Spawned -> DataAvailable
 	if (CurrentState == InitTags.InitState_Spawned && DesiredState == InitTags.InitState_DataAvailable)
 	{
-		// ¾Æ¸¶ PawnData¸¦ ´©±º°¡ ¼³Á¤ÇÏ´Â ¸ğ¾çÀÌ´Ù.
+		// ì•„ë§ˆ PawnDataë¥¼ ëˆ„êµ°ê°€ ì„¤ì •í•˜ëŠ” ëª¨ì–‘ì´ë‹¤.
 		if (!PawnData)
 		{
+			UE_LOG(LogLS, Error, TEXT("PawnData Is null"));
 			return false;
 		}
 
-		// LocallyControlled ÀÎ PawnÀÌ Controller °¡ ¾øÀ¸¸é ¿¡·¯
+		// LocallyControlled ì¸ Pawnì´ Controller ê°€ ì—†ìœ¼ë©´ ì—ëŸ¬
 		const bool bIsLocallyControlled = Pawn->IsLocallyControlled();
 		if (bIsLocallyControlled)
 		{
@@ -149,39 +155,40 @@ bool ULSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManage
 	// DataAvailable -> DataInitialized
 	if (CurrentState == InitTags.InitState_DataAvailable && DesiredState == InitTags.InitState_DataInitialized)
 	{
-		// Actor¿¡ ¹ÙÀÎµå µÈ ¸ğµç Featrue µéÀÌ DataAvailabel »óÅÂÀÏ¶§, DataInitialized·Î ³Ñ¾î°¨
-		// - HaveAllFeaturesReachedInitState È®ÀÎ
-		return Manager->HaveAllFeaturesReachedInitState(Pawn, InitTags.InitState_DataInitialized);
+		// Actorì— ë°”ì¸ë“œ ëœ ëª¨ë“  Featrue ë“¤ì´ DataAvailabel ìƒíƒœì¼ë•Œ, DataInitializedë¡œ ë„˜ì–´ê°
+		// - HaveAllFeaturesReachedInitState í™•ì¸
+		return Manager->HaveAllFeaturesReachedInitState(Pawn, InitTags.InitState_DataAvailable);
 	}
 
 	// DataInitialized -> GameplayReady
 	if (CurrentState == InitTags.InitState_DataInitialized && DesiredState == InitTags.InitState_GameplayReady)
 	{
+		UE_LOG(LogLS, Error, TEXT("ULSPawnExtensionComponent::CanChangeInitState Is End"));
 		return true;
 	}
 
-	// À§ÀÇ ¼±ÇüÀûÀÎ transitionÀÌ ¾Æ´Ï¸é false;
+	// ìœ„ì˜ ì„ í˜•ì ì¸ transitionì´ ì•„ë‹ˆë©´ false;
 	return false;
 }
 
 void ULSPawnExtensionComponent::CheckDefaultInitialization()
 {
-	// PawnExtensionComponent´Â Feature ComponentµéÀÇ ÃÊ±âÈ­¸¦ °üÀåÇÏ´Â ComponentÀÓ.
-	// - µû¶ó¼­ Actor¿¡ ¹ÙÀÎµò µÈ Feature Componentµé¿¡ ´ëÇØ CheckDefaultInitializationÀ» È£ÃâÇØ ÁÖµµ·Ï ÇÑ´Ù (Force Update °°Àº ´À³¦)
-	// - ÀÌ ¸Ş¼­µå¸¦ IGameFrameworkInitStateInterface°¡ Á¦°øÇÏ´Âµ¥, CheckDefaultInitializationForImplementersÀÌ´Ù.
-	// - °£´ÜÈ÷ CheckDefaultInitializationForImplementers ¸¦ º¸ÀÚ
+	// PawnExtensionComponentëŠ” Feature Componentë“¤ì˜ ì´ˆê¸°í™”ë¥¼ ê´€ì¥í•˜ëŠ” Componentì„.
+	// - ë”°ë¼ì„œ Actorì— ë°”ì¸ë”˜ ëœ Feature Componentë“¤ì— ëŒ€í•´ CheckDefaultInitializationì„ í˜¸ì¶œí•´ ì£¼ë„ë¡ í•œë‹¤ (Force Update ê°™ì€ ëŠë‚Œ)
+	// - ì´ ë©”ì„œë“œë¥¼ IGameFrameworkInitStateInterfaceê°€ ì œê³µí•˜ëŠ”ë°, CheckDefaultInitializationForImplementersì´ë‹¤.
+	// - ê°„ë‹¨íˆ CheckDefaultInitializationForImplementers ë¥¼ ë³´ì
 	CheckDefaultInitializationForImplementers();
 
 	const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
 
-	// »ç¿ëÀÚ Á¤ÀÇ InitState¸¦ Á÷Á¢ ³Ñ°ÜÁà¾ß ÇÑ´Ù.
+	// ì‚¬ìš©ì ì •ì˜ InitStateë¥¼ ì§ì ‘ ë„˜ê²¨ì¤˜ì•¼ í•œë‹¤.
 	static const TArray<FGameplayTag> StateChain = { InitTags.InitState_Spawned, InitTags.InitState_DataAvailable, InitTags.InitState_DataInitialized, InitTags.InitState_GameplayReady };
 
-	// CanChangeInitState()¿Í HandleChangeInitState() ±×¸®°í ChangeFeatureInitState È£ÃâÀ» ÅëÇÑ OnActorInitStateChanged Delegate È£Ãâ±îÁö ÁøÇà
-	// ¾Æ·¡ÀÇ ÄÚµå¸¦ ÇÑ¹ø ºÁº¸ÀÚ
-	// - ÇØ´ç ÄÚµå±îÁö º¸¸é ÁüÀÛ °¡´ÉÇÏ´Ù
-	//	- °è¼Ó »óÅÂ¸¦ °¡´ÉÇÒ¶§ ±îÁö ÇÑ¹ø ¾÷µ¥ÀÌÆ®¸¦ ÇÑ´Ù
-	//	- InitState¿¡ ´ëÇÑ º¯È­´Â ¼±ÇüÀûÀÌ´Ù. 
-	//	 - ¾÷µ¥ÀÌÆ®°¡ ¸ØÃß¸é ´©±º°¡ ½ÃÀÛÇØÁà¾ß ÇÑ´Ù.
+	// CanChangeInitState()ì™€ HandleChangeInitState() ê·¸ë¦¬ê³  ChangeFeatureInitState í˜¸ì¶œì„ í†µí•œ OnActorInitStateChanged Delegate í˜¸ì¶œê¹Œì§€ ì§„í–‰
+	// ì•„ë˜ì˜ ì½”ë“œë¥¼ í•œë²ˆ ë´ë³´ì
+	// - í•´ë‹¹ ì½”ë“œê¹Œì§€ ë³´ë©´ ì§ì‘ ê°€ëŠ¥í•˜ë‹¤
+	//	- ê³„ì† ìƒíƒœë¥¼ ê°€ëŠ¥í• ë•Œ ê¹Œì§€ í•œë²ˆ ì—…ë°ì´íŠ¸ë¥¼ í•œë‹¤
+	//	- InitStateì— ëŒ€í•œ ë³€í™”ëŠ” ì„ í˜•ì ì´ë‹¤. 
+	//	 - ì—…ë°ì´íŠ¸ê°€ ë©ˆì¶”ë©´ ëˆ„êµ°ê°€ ì‹œì‘í•´ì¤˜ì•¼ í•œë‹¤.
 	ContinueInitStateChain(StateChain);
 }

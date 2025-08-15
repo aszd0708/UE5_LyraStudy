@@ -5,6 +5,37 @@
 #include "CoreMinimal.h"
 #include "LSCameraMode.generated.h"
 
+/*
+* FLSCameraModeView
+*/
+struct FLSCameraModeView
+{
+	FLSCameraModeView();
+	
+	FVector Location;
+	FRotator Rotation;
+	FRotator ControlRotation;
+	float FieldOfView;
+};
+
+/*
+* [0,1]을 BlendFunction에 맞게 재매핑을 위한 타입
+*/
+UENUM(BlueprintType)
+enum class ELSCameraModeBlendFunction : uint8
+{
+	Linear,
+	/*
+	* EaseIn/Out은 exponent값에 의해 조절됨
+	*/
+	EaseIn,
+	EaseOut,
+	EaseInOut,
+	COUNT
+};
+
+class ULSCameraComponent;
+
 /** Camera Blending 대상 유닛 */
 UCLASS(Abstract, NotBlueprintable)
 class ULSCameraMode : public UObject
@@ -13,6 +44,35 @@ class ULSCameraMode : public UObject
 	
 public:
 	ULSCameraMode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	/*
+	* member methods
+	*/
+	void UpdateCameraMode(float DeltaTime);
+	virtual void UpdateView(float DeltaTime);
+	void UpdateBlending(float DeltaTime);
+
+	ULSCameraComponent* GetLSCameraComponent() const;
+	AActor* GetTargetActor();
+	FVector GetPivotLocation();
+	FRotator GetPivotRotation();
+
+	/*
+	* member variables
+	*/
+	/* CameraMode에 의해 생성된 CameraView */
+	FLSCameraModeView View;
+
+	/* Camera Mode의 FOV */
+	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "5.0", UIMax = "170", ClampMin = "5.0", ClampMax = "170.0"))
+	float FieldOfView;
+
+	/* View에 대한 Pitch [Min, Max] */
+	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "-89.0", UIMax = "89.0", ClampMin = "-89.0", ClampMax = "89.0"))
+	float ViewPitchMin;
+
+	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "-89.0", UIMax = "89.0", ClampMin = "-89.0", ClampMax = "89.0"))
+	float ViewPitchMax;
 
 	/* 얼마동안 Blend를 진행할지 시간을 의미 */
 	UPROPERTY(EditDefaultsOnly, Category = "Blending")
@@ -26,6 +86,15 @@ public:
 	* 앞서 BlendAlpha의 선형 값을 매핑하여 최종 BlendWeight를 계산
 	*/
 	float BlendWeight;
+
+	/**
+	* EaseIn/Out에 사용한 Exponent
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Blending")
+	float BlendExponent;
+
+	/** Blend function */
+	ELSCameraModeBlendFunction BlendFunction;
 };
 
 /* Camera Blending을 담당하는 객체 */
@@ -41,6 +110,9 @@ public:
 	*/
 	ULSCameraMode* GetCameraModeInstance(TSubclassOf<ULSCameraMode>& CameraModeClass);
 	void PushCameraMode(TSubclassOf<ULSCameraMode>& CameraModeClass);
+	void EvaluateStack(float DeltaTime, FLSCameraModeView& OutCameraModeView);
+	void UpdateStack(float DeltaTime);
+	void BlendStack(FLSCameraModeView& OutCameraModeView) const;
 
 	/*
 	* member variables

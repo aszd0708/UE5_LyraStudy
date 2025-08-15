@@ -6,6 +6,7 @@
 #include "Camera/LSCameraMode.h"
 #include "LSCameraMode_ThirdPerson.generated.h"
 
+class UCurveVector;
 /**
  * 
  */
@@ -16,4 +17,15 @@ class LYRASTUDY_API ULSCameraMode_ThirdPerson : public ULSCameraMode
 
 public:
 	ULSCameraMode_ThirdPerson(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	/*
+	* ULSCameraMode's interface
+	*/
+	virtual void UpdateView(float DeltaTime) override;
+
+	/*
+	* member variables
+	*/
+	UPROPERTY(EditDefaultsOnly, Category = "Third Person")
+	TObjectPtr<const UCurveVector> TargetOffsetCurve;
 };

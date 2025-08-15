@@ -3,8 +3,137 @@
 
 #include "LSCameraMode.h"
 
+#include "LSPlayerCameraManager.h"
+#include "LSCameraComponent.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(LSCameraMode)
+
+
+FLSCameraModeView::FLSCameraModeView() : Location(ForceInit), Rotation(ForceInit), ControlRotation(ForceInit), FieldOfView(LS_CAMERA_DEFAULT_FOV)
+{
+}
+
+
 ULSCameraMode::ULSCameraMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	FieldOfView = LS_CAMERA_DEFAULT_FOV;
+	ViewPitchMin = LS_CAMERA_DEFAULT_PITCH_MIN;
+	ViewPitchMax = LS_CAMERA_DEFAULT_PITCH_MAX;
+
+	BlendTime = 0.0f;
+	BlendAlpha = 1.0f;
+	BlendWeight = 1.0f;
+
+	BlendFunction = ELSCameraModeBlendFunction::EaseOut;
+	BlendExponent = 4.0f;
+}
+
+void ULSCameraMode::UpdateCameraMode(float DeltaTime)
+{
+	// Actor를 활용하여, Pivot[Location|Rotation]을 계산하여, View를 업데이트
+	UpdateView(DeltaTime);
+
+	// BlendWeight를 DeltaTime을 활용하여, BlendAlpha계산 후, BlendFunction에 맞게 재매핑하여 최종 계산
+	UpdateBlending(DeltaTime);
+}
+
+void ULSCameraMode::UpdateView(float DeltaTime)
+{
+	// CameraMode를 가지고 있는 CameraComponent의 Owner인 Character(Pawn0을 활용하여, PivotLocation/Rotation을 반환함
+	FVector PivotLocation = GetPivotLocation();
+	FRotator PivotRotation = GetPivotRotation();
+
+	// Pitch 값에 대해 Min/Max를 Clamp시킴
+	PivotRotation.Pitch = FMath::ClampAngle(PivotRotation.Pitch, ViewPitchMin, ViewPitchMax);
+
+	// FLSCameraModeView에 PivotLocation/PivotRotation 설정
+	View.Location = PivotLocation;
+	View.Rotation = PivotRotation;
+
+	// PivoRotation을 똑같이 ControlRotation으로 활용
+	View.ControlRotation = View.Rotation;
+	View.FieldOfView = FieldOfView;
+
+	// 정리하면, Character의 Location과 ControlRotation을 활용하여, View를 업데이트함.
+}
+
+void ULSCameraMode::UpdateBlending(float DeltaTime)
+{
+	// BlendAlpha를 DeltaTime을 통해 계산
+	if (BlendTime > 0.f)
+	{
+		// BlendTime은 Blending 과정 총 시간(초)
+		// - BlendAlpha는 0 -> 1로 변화하는 과정:
+		// - DeltaTime을 활용하여, BlendTime을 1로 볼 경우, 진행 정도를 누적
+		BlendAlpha += (DeltaTime / BlendTime);
+	}
+	else
+	{
+		BlendAlpha = 1.0f;
+	}
+
+	// BlendWeight를 [0,1]를 BlendFunction에 맞게 재매핑
+	const float Exponent = (BlendExponent > 0.0f) ? BlendExponent : 1.0f;
+	switch (BlendFunction)
+	{
+	case ELSCameraModeBlendFunction::Linear:
+		BlendWeight = BlendAlpha;
+		break;
+	case ELSCameraModeBlendFunction::EaseIn:
+		BlendWeight = FMath::InterpEaseIn(0.0f, 1.0f, BlendAlpha, Exponent);
+		break;
+	case ELSCameraModeBlendFunction::EaseOut:
+		BlendWeight = FMath::InterpEaseOut(0.0f, 1.0f, BlendAlpha, Exponent);
+		break;
+	case ELSCameraModeBlendFunction::EaseInOut:
+		BlendWeight = FMath::InterpEaseInOut(0.0f, 1.0f, BlendAlpha, Exponent);
+		break;
+	default:
+		checkf(false, TEXT("UpdateBlending: Invalid BlendFunction [%d]\n"), (uint8)BlendFunction);
+		break;
+	}
+}
+
+ULSCameraComponent* ULSCameraMode::GetLSCameraComponent() const
+{
+	// 우리가 앞서 ULSCameraMode를 생성하는 곳은 ULSCameraModeStack이었다:
+	// - 해당 코드를 보면, GetOuter()를 ULSCameraMode로 LSCameraComponent로 설정하였다
+	// - ULSCameraModeStack::GetCameraModeInstance() 확인
+	return CastChecked<ULSCameraComponent>(GetOuter());
+}
+
+AActor* ULSCameraMode::GetTargetActor()
+{
+	const ULSCameraComponent* LSCameraComponent = GetLSCameraComponent();
+	return LSCameraComponent->GetTargetActor();
+}
+
+FVector ULSCameraMode::GetPivotLocation()
+{
+	const AActor* TargetActor = GetTargetActor();
+	check(TargetActor);
+
+	if (const APawn* TargetPawn = Cast<APawn>(TargetActor))
+	{
+		// BaseEyeHeight를 고려하여, ViewLocation을 반환함
+		return TargetPawn->GetPawnViewLocation();
+	}
+
+	return TargetActor->GetActorLocation();
+}
+
+FRotator ULSCameraMode::GetPivotRotation()
+{
+	const AActor* TargetActor = GetTargetActor();
+	check(TargetActor);
+
+	if (const APawn* TargetPawn = Cast<APawn>(TargetActor))
+	{
+		// GetViewRoation() 확인, 보통 Pawn의 ControlRotation을 반환
+		return TargetPawn->GetViewRotation();
+	}
+
+	return TargetActor->GetActorRotation();
 }
 
 ULSCameraModeStack::ULSCameraModeStack(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -108,4 +237,51 @@ void ULSCameraModeStack::PushCameraMode(TSubclassOf<ULSCameraMode>& CameraModeCl
 
 	// 앞서 설명했듯이 마지막은 항상 1.0이 되어야 함!
 	CameraModeStack.Last()->BlendWeight = 1.0f;
+}
+
+void ULSCameraModeStack::EvaluateStack(float DeltaTime, FLSCameraModeView& OutCameraModeView)
+{
+	// Top -> Bottom [0 -> Num]까지 순차적으로 Stack에 있는 CameraMode 업데이트
+	UpdateStack(DeltaTime);
+
+	// Bottom -> Top까지 CameraModeStack에 대해 Blend 진행
+	BlendStack(OutCameraModeView);
+}
+
+void ULSCameraModeStack::UpdateStack(float DeltaTime)
+{
+	const int32 StackSize = CameraModeStack.Num();
+	if (StackSize <= 0)
+	{
+		return;
+	}
+
+	// CameraModeStack을 순회하며, CameraMode를 업데이트 해준다
+	int32 RemoveCount = 0;
+	int32 RemoveIndex = INDEX_NONE;
+	for (int32 StackIndex = 0; StackIndex < StackSize; ++StackIndex)
+	{
+		ULSCameraMode* CameraMode = CameraModeStack[StackIndex];
+		check(CameraMode);
+
+		// UpdateCameraMode를 확인해보자
+		CameraMode->UpdateCameraMode(DeltaTime);
+
+		// 만약 하나라도 CameraMode의 BlendWight 1.0에 도달했다면, 그 이후 CameraMode를 제거한다.
+		if (CameraMode->BlendWeight >= 1.0f)
+		{
+			RemoveIndex = (StackIndex + 1);
+			RemoveCount = (StackSize - RemoveIndex);
+			break;
+		}
+	}
+
+	if (RemoveCount > 0)
+	{
+		CameraModeStack.RemoveAt(RemoveIndex, RemoveCount);
+	}
+}
+
+void ULSCameraModeStack::BlendStack(FLSCameraModeView& OutCameraModeView) const
+{
 }
