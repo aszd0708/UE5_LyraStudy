@@ -46,7 +46,7 @@ void ULSHeroComponent::BeginPlay()
 	ensure(TryToChangeInitState(FLSGameplayTags::Get().InitState_Spawned));
 
 	// ForceUpdate 진행
-	//CheckDefaultInitialization();
+	CheckDefaultInitialization();
 }
 
 void ULSHeroComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
