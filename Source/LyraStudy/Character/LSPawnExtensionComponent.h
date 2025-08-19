@@ -9,7 +9,7 @@
 
 class ULSPawnData;
 /**
- * ÃÊ±âÈ­ Àü¹İÀ» ´ã´çÇÏ´Â ÄÄÆ÷³ÍÆ®
+ * ì´ˆê¸°í™” ë¡œì§ì„ ë‹´ë‹¹í•˜ëŠ” ì»´í¬ë„ŒíŠ¸
  */
 UCLASS()
 class LYRASTUDY_API ULSPawnExtensionComponent : public UPawnComponent, public IGameFrameworkInitStateInterface
@@ -28,7 +28,7 @@ public:
 	void SetPawnData(const ULSPawnData* InPawnData);
 	void SetupPlayerInputComponent();
 
-	/* FeatureName Á¤ÀÇ */
+	/* FeatureName ì •ì˜ */
 	static const FName NAME_ActorFeatureName;
 
 	/*
@@ -44,10 +44,10 @@ public:
 	virtual FName GetFeatureName() const final { return NAME_ActorFeatureName; }
 	virtual void OnActorInitStateChanged(const FActorInitStateChangedParams& Params) final;
 	virtual bool CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const final;
-	virtual void CheckDefaultInitialization();
+	virtual void CheckDefaultInitialization() final;
 
 	/*
-	* Pawn À» »ı¼ºÇÑ µ¥ÀÌÅÍ Ä³½Ì
+	* Pawn ì˜ ë°ì´í„°ë¥¼ ë‹´ì•„ë‘ëŠ” ìºì‹œ
 	*/
 	UPROPERTY(EditInstanceOnly, Category = "LS|Pawn")
 	TObjectPtr<const ULSPawnData> PawnData;

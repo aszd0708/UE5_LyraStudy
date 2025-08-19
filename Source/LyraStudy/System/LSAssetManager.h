@@ -25,7 +25,7 @@ public:
 	*/
 	static bool ShouldLogAssetLoads();
 
-	virtual void StartInitialLoading() override;
+	virtual void StartInitialLoading() final;
 	
 	static UObject* SynchronousLoadAsset(const FSoftObjectPath& AssetPath);
 

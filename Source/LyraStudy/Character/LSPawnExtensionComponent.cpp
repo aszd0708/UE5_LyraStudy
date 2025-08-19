@@ -5,6 +5,7 @@
 #include "Components/GameFrameworkComponentManager.h"
 #include "LSLogChannels.h"
 #include "LSGameplayTags.h"
+#include "Net/UnrealNetwork.h"
 
 /* feature Name 을 component 단위니깐 component를 빼고, pawn extension만 넣을 것을 확인 할 수 있다. */
 const FName ULSPawnExtensionComponent::NAME_ActorFeatureName("PawnExtension");
@@ -15,6 +16,7 @@ ULSPawnExtensionComponent::ULSPawnExtensionComponent(const FObjectInitializer& O
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+PRAGMA_DISABLE_OPTIMIZATION
 void ULSPawnExtensionComponent::SetPawnData(const ULSPawnData* InPawnData)
 {
 	// Pawn에 대해 Authority가 없을 경우, SetPawnData는 진행하지 않음
@@ -35,7 +37,7 @@ void ULSPawnExtensionComponent::SetPawnData(const ULSPawnData* InPawnData)
 
 void ULSPawnExtensionComponent::SetupPlayerInputComponent()
 {
-	// ForceUpdate로 다시 InitState 상태면환 시작
+	// ForceUpdate로 다시 InitState 상태 변환 시작 (연결 고리)
 	CheckDefaultInitialization();
 }
 
@@ -59,6 +61,7 @@ void ULSPawnExtensionComponent::OnRegister()
 	// 디버깅을 위한 함수
 	UGameFrameworkComponentManager* Manager = UGameFrameworkComponentManager::GetForActor(GetOwningActor());
 }
+PRAGMA_ENABLE_OPTIMIZATION
 
 void ULSPawnExtensionComponent::BeginPlay()
 {
@@ -95,7 +98,6 @@ void ULSPawnExtensionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason
 
 void ULSPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateChangedParams& Params)
 {
-	UE_LOG(LogLS, Error, TEXT("ULSPawnExtensionComponent::OnActorInitStateChanged FeatureState : %s"), *Params.FeatureState.ToString());
 	if (Params.FeatureName != NAME_ActorFeatureName)
 	{
 		// LSPawnExtenstionComponent는 다른 Feature Component들의 상태가 DataVailable을 관찰하여, Sync를 맞추는 구간이 있었다 (CanChangeInitState)
@@ -110,10 +112,6 @@ void ULSPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateCha
 
 bool ULSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
 {
-	UE_LOG(LogLS, Error, TEXT("====================================================================================="));
-	UE_LOG(LogLS, Error, TEXT("ULSPawnExtensionComponent::CanChangeInitState CurrentState : %s"), *CurrentState.ToString());
-	UE_LOG(LogLS, Error, TEXT("ULSPawnExtensionComponent::CanChangeInitState DesiredState : %s"), *DesiredState.ToString());
-	UE_LOG(LogLS, Error, TEXT("====================================================================================="));
 	check(Manager);
 
 	APawn* Pawn = GetPawn<APawn>();
@@ -135,7 +133,6 @@ bool ULSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManage
 		// 아마 PawnData를 누군가 설정하는 모양이다.
 		if (!PawnData)
 		{
-			UE_LOG(LogLS, Error, TEXT("PawnData Is null"));
 			return false;
 		}
 
@@ -163,7 +160,6 @@ bool ULSPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManage
 	// DataInitialized -> GameplayReady
 	if (CurrentState == InitTags.InitState_DataInitialized && DesiredState == InitTags.InitState_GameplayReady)
 	{
-		UE_LOG(LogLS, Error, TEXT("ULSPawnExtensionComponent::CanChangeInitState Is End"));
 		return true;
 	}
 

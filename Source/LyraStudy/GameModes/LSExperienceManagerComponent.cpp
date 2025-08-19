@@ -60,8 +60,6 @@ void ULSExperienceManagerComponent::StartExperienceLoad()
 
 	ULSAssetManager& AssetManager = ULSAssetManager::Get();
 
-	TSet<FPrimaryAssetId> BundleAssetList;
-
 	// 이미 앞서, ServerSetCurrentExperience에서 우리는 ExperienceId를 넘겨주었는데, 여기서 CDO를 활용하여, GetPrimaryAssetId를 로딩할 대상으로 넣는다.
 	// 왜 이렇게??
 	// - GetPrimaryAssetId를 좀 더 자세히 보자
@@ -70,6 +68,7 @@ void ULSExperienceManagerComponent::StartExperienceLoad()
 	// 2. CDO를 가져와서, GetPrimaryAssetId를 호출한 이유
 
 	// 우리는 앞서 이미 CDO로 로딩하여, CDO를 사용하지 않고 CDO를 사용하여 로딩할 에셋을 지정하여, BundleAssetList에 준다.
+	TSet<FPrimaryAssetId> BundleAssetList;
 	BundleAssetList.Add(CurrentExperience->GetPrimaryAssetId());
 
 	// load assets associated with the experience
@@ -90,11 +89,11 @@ void ULSExperienceManagerComponent::StartExperienceLoad()
 			BundlesToLoad.Add(UGameFeaturesSubsystemSettings::LoadStateServer);
 		}
 	}
-
+	
 	FStreamableDelegate OnAssetsLoadedDelegate = FStreamableDelegate::CreateUObject(this, &ThisClass::OnExperienceLoadComplete);
 	// 아래도, 후일 Bundle을 우리가 GameFeature에 연동하면서 더 깊게 알아보자, 지금은 B_LSDefaultExperience를 로딩해주는 함수로 생각
 	TSharedPtr<FStreamableHandle> Handle = AssetManager.ChangeBundleStateForPrimaryAssets(BundleAssetList.Array(), BundlesToLoad, {}, false, FStreamableDelegate(), FStreamableManager::AsyncLoadHighPriority);
-
+	
 	if (!Handle.IsValid() || Handle->HasLoadCompleted())
 	{
 		// 로딩이 완료되었으면, ExecuteDelegate를 통해 OnAssetsLoadedDelegate를 호출하자
@@ -125,7 +124,6 @@ void ULSExperienceManagerComponent::OnExperienceLoadComplete()
 
 void ULSExperienceManagerComponent::OnExperienceFullLoadCompleted()
 {
-	UE_LOG(LogLS, Error, TEXT("ULSExperienceManagerComponent::OnExperienceFullLoadCompleted"));
 	check(LoadState != ELSExperienceLoadState::Loaded);
 
 	LoadState = ELSExperienceLoadState::Loaded;
@@ -133,7 +131,7 @@ void ULSExperienceManagerComponent::OnExperienceFullLoadCompleted()
 	OnExperienceLoaded.Clear();
 }
 
-const ULSExperienceDefinition* ULSExperienceManagerComponent::GetCurrentExperienceChecked()
+const ULSExperienceDefinition* ULSExperienceManagerComponent::GetCurrentExperienceChecked() const
 {
 	check(LoadState == ELSExperienceLoadState::Loaded);
 	check(CurrentExperience != nullptr);

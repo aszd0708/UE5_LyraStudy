@@ -72,12 +72,10 @@ void ULSCameraComponent::UpdateCameraModes()
 
 	// DetermineCameraModeDelegate는 CameraMode Class 를 반환한다.
 	// - 해당 delegate는 HeroComponent의 멤버 함수로 바인딩 되어있다
-	if (DeterminCameraModeDelegate.IsBound())
+	if (DetermineCameraModeDelegate.IsBound())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ULSCameraComponent::UpdateCameraModes - Delegate is bound. Executing."));
-		if (TSubclassOf<ULSCameraMode> CameraMode = DeterminCameraModeDelegate.Execute())
+		if (TSubclassOf<ULSCameraMode> CameraMode = DetermineCameraModeDelegate.Execute())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ULSCameraComponent::UpdateCameraModes - Got CameraMode '%s'. Pushing to stack."), *CameraMode->GetName());
 			CameraModeStack->PushCameraMode(CameraMode);
 		}
 		else

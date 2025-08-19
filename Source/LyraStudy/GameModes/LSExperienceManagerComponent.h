@@ -44,7 +44,7 @@ public:
 	void StartExperienceLoad();
 	void OnExperienceLoadComplete();
 	void OnExperienceFullLoadCompleted();
-	const ULSExperienceDefinition* GetCurrentExperienceChecked();
+	const ULSExperienceDefinition* GetCurrentExperienceChecked() const;
 
 public:
 	UPROPERTY()

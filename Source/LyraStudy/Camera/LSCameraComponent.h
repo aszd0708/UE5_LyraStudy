@@ -34,7 +34,7 @@ public:
 	/*
 	* CameraComponent interface
 	*/
-	virtual void OnRegister() override;
+	virtual void OnRegister() final;
 	virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView) final;
 
 	/*
@@ -45,5 +45,5 @@ public:
 	TObjectPtr<ULSCameraModeStack> CameraModeStack;
 
 	/* 현재 CameraMode를 갖고오는 Delegate */
-	FLSCameraModeDelegate DeterminCameraModeDelegate;
+	FLSCameraModeDelegate DetermineCameraModeDelegate;
 };

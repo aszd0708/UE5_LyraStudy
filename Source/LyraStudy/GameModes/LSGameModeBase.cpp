@@ -24,26 +24,26 @@ void ALSGameModeBase::InitGame(const FString& MapName, const FString& Options, F
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	// ¾ÆÁ÷ GameInstance¸¦ ÅëÇØ, ÃÊ±âÈ­ ÀÛ¾÷ÀÌ ÁøÇàµÇ¹Ç·Î, Çö ÇÁ·¹ÀÓ¿¡´Â LyraÀÇ ConceptÀÎ Experience Ã³¸®¸¦ ÁøÇàÇÒ¼ö ¾ø´Ù.
-	// - ÀÌ¸¦ Ã³¸®ÇÏ±â À§ÇØ, ÇÑ ÇÁ·¹ÀÓ µÚ¿¡ ÀÌº¥Æ®¸¦ ¹Ş¾Æ Ã³¸®¸¦ ÀÌ¾î¼­ ÁøÇàÇÑ´Ù.
+	// ì•„ì§ GameInstanceë¥¼ í†µí•´, ì´ˆê¸°í™” ì‘ì—…ì´ ì§„í–‰ë˜ë¯€ë¡œ, í˜„ í”„ë ˆì„ì—ëŠ” Lyraì˜ Conceptì¸ Experience ì²˜ë¦¬ë¥¼ ì§„í–‰í•  ìˆ˜ ì—†ë‹¤:
+	// - ì´ë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•´, í•œí”„ë ˆì„ ë’¤ì— ì´ë²¤íŠ¸ë¥¼ ë°›ì•„ ì²˜ë¦¬ë¥¼ ì´ì–´ì„œ ì§„í–‰í•œë‹¤
 	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::HandleMatchAssignmentIfNotExpectingOne);
 }
 
 void ALSGameModeBase::InitGameState()
 {
 	Super::InitGameState();
-	
-	// Experience ºñµ¿±â ·ÎµùÀ» À§ÇÑ Delegate¸¦ ÁØºñÇÑ´Ù
+
+	// Experience ë¹„ë™ê¸° ë¡œë”©ì„ ìœ„í•œ Delegateë¥¼ ì¤€ë¹„í•œë‹¤:
 	ULSExperienceManagerComponent* ExperienceManagerComponent = GameState->FindComponentByClass<ULSExperienceManagerComponent>();
 	check(ExperienceManagerComponent);
 
-	// OnExperienceLoaded µî·Ï
+	// OnExperienceLoaded ë“±ë¡
 	ExperienceManagerComponent->CallOrRegister_OnExperienceLoaded(FOnLSExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
 }
 
 UClass* ALSGameModeBase::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
-	// GetPawnDataForController¸¦ È°¿ëÇÏ¿©, PawnData·Î ºÎÅÍ PawnClass¸¦ À¯µµÇÏÀÚ
+	// GetPawnDataForControllerë¥¼ í™œìš©í•˜ì—¬, PawnDataë¡œë¶€í„° PawnClassë¥¼ ìœ ë„í•˜ì
 	if (const ULSPawnData* PawnData = GetPawnDataForController(InController))
 	{
 		if (PawnData->PawnClass)
@@ -76,7 +76,7 @@ APawn* ALSGameModeBase::SpawnDefaultPawnAtTransform_Implementation(AController* 
 	{
 		if (APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo))
 		{
-			// FindPawnExtensionComponent ±¸Çö
+			// FindPawnExtensionComponent êµ¬í˜„
 			if (ULSPawnExtensionComponent* PawnExtComp = ULSPawnExtensionComponent::FindPawnExtensionComponent(SpawnedPawn))
 			{
 				if (const ULSPawnData* PawnData = GetPawnDataForController(NewPlayer)) 
@@ -94,7 +94,7 @@ APawn* ALSGameModeBase::SpawnDefaultPawnAtTransform_Implementation(AController* 
 
 void ALSGameModeBase::HandleMatchAssignmentIfNotExpectingOne()
 {
-	// ÇØ´ç ÇÔ¼ö¿¡¼­ ¿ì¸®°¡ ·ÎµùÇÒ Experience¿¡ ´ëÇØ PrimaryAssetId¸¦ »ı¼ºÇÏ¿©,  OnMatchAssignmentGivenÀ¸·Î ³Ñ°ÜÁØ´Ù.
+	// í•´ë‹¹ í•¨ìˆ˜ì—ì„œëŠ” ìš°ë¦¬ê°€ ë¡œë”©í•  Experienceì— ëŒ€í•´ PrimaryAssetIdë¥¼ ìƒì„±í•˜ì—¬, OnMatchAssignmentGivenìœ¼ë¡œ ë„˜ê²¨ì¤€ë‹¤
 
 	FPrimaryAssetId ExperienceId;
 
@@ -105,19 +105,20 @@ void ALSGameModeBase::HandleMatchAssignmentIfNotExpectingOne()
 	UWorld* World = GetWorld();
 
 	// fall back to the default experience
-	// ÀÏ´Ü ±âº» ¿É¼ÇÀ¸·Î defaultÇÏ°Ô B_LSDefaultExperience·Î ¼³Á¤ÇØ³õ´Â´Ù.
+	// ì¼ë‹¨ ê¸°ë³¸ ì˜µì…˜ìœ¼ë¡œ defaultí•˜ê²Œ B_HakDefaultExperienceë¡œ ì„¤ì •ë†“ì
 	if (!ExperienceId.IsValid())
 	{
 		ExperienceId = FPrimaryAssetId(FPrimaryAssetType("LSExperienceDefinition"), FName("B_LSDefaultExperience"));
 	}
 
-	// HandleMatchAssignmentIfNotExpectingOne°ú OnMatchAssignmentGiven()Àº ¾ÆÁ÷ Á÷°üÀûÀ¸·Î ¿Í´İÁö ¾ÊÀ½
+	// í•„ìê°€ ì´í•´í•œ HandleMatchAssignmentIfNotExpectingOneê³¼ OnMatchAssignmentGiven()ì€ ì•„ì§ ì§ê´€ì ìœ¼ë¡œ ì´ë¦„ì´ ì™€ë‹«ì§€ ì•ŠëŠ”ë‹¤ê³  ìƒê°í•œë‹¤
+	// - í›„ì¼, ì–´ëŠì •ë„ Lyraê°€ êµ¬í˜„ë˜ë©´, í•´ë‹¹ í•¨ìˆ˜ì˜ ëª…ì„ ë” ì´í•´í•  ìˆ˜ ìˆì„ ê²ƒìœ¼ë¡œ ì˜ˆìƒí•œë‹¤
 	OnMatchAssignmentGiven(ExperienceId);
 }
 
 void ALSGameModeBase::OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId)
 {
-	// ÇØ´ç ÇÔ¼ö´Â ExperienceManagerComponent¸¦ È°¿ëÇÏ¿© Experience¸¦ ·ÎµùÇÏ±â À§ÇØ, ExperienceManagerComponentÀÇ ServerSetCurrentExperience¸¦ È£ÃâÇÑ´Ù.
+	// í•´ë‹¹ í•¨ìˆ˜ëŠ” ExperienceManagerComponentì„ í™œìš©í•˜ì—¬ Experienceì„ ë¡œë”©í•˜ê¸° ìœ„í•´, ExperienceManagerComponentì˜ ServerSetCurrentExperienceë¥¼ í˜¸ì¶œí•œë‹¤
 
 	check(ExperienceId.IsValid());
 
@@ -137,13 +138,13 @@ bool ALSGameModeBase::IsExperienceLoaded() const
 
 void ALSGameModeBase::OnExperienceLoaded(const ULSExperienceDefinition* CurrentExperience)
 {
-	// PlayerController¸¦ ¼øÈ¸ÇÏ¸ç
+	// PlayerControllerë¥¼ ìˆœíšŒí•˜ë©°
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		APlayerController* PC = Cast<APlayerController>(*Iterator);
 
-		// PlayerController°¡ PawnÀ» PossessÇÏÁö ¾Ê¾Ò´Ù¸é, RestartPlayer¸¦ ÅëÇØ PawnÀ» ´Ù½Ã Spawn ÇÑ´Ù.
-		// - OnPossess¸¦ º¸ÀÚ
+		// PlayerControllerê°€ Pawnì„ Possessí•˜ì§€ ì•Šì•˜ë‹¤ë©´, RestartPlayerë¥¼ í†µí•´ Pawnì„ ë‹¤ì‹œ Spawní•œë‹¤
+		// - í•œë²ˆ OnPossessë¥¼ ë³´ë„ë¡ í•˜ì:
 		if (PC && PC->GetPawn() == nullptr)
 		{
 			if (PlayerCanRestart(PC))
@@ -154,14 +155,14 @@ void ALSGameModeBase::OnExperienceLoaded(const ULSExperienceDefinition* CurrentE
 	}
 }
 
-const ULSPawnData* ALSGameModeBase::GetPawnDataForController(const AController* InController)
+const ULSPawnData* ALSGameModeBase::GetPawnDataForController(const AController* InController) const
 {
-	// °ÔÀÓ µµÁß¿¡ PawnData°¡ ¿À¹ö¶óÀÌµå µÇ¾úÀ» °æ¿ì, PawnData´Â PlayerState¿¡¼­ °¡Á®¿À°Ô µÊ
+	// ê²Œì„ ë„ì¤‘ì— PawnDataê°€ ì˜¤ë²„ë¼ì´ë“œ ë˜ì—ˆì„ ê²½ìš°, PawnDataëŠ” PlayerStateì—ì„œ ê°€ì ¸ì˜¤ê²Œ ë¨
 	if (InController)
 	{
 		if (const ALSPlayerState* LSPS = InController->GetPlayerState<ALSPlayerState>())
 		{
-			// GetPawnData ±¸Çö
+			// GetPawnData êµ¬í˜„
 			if (const ULSPawnData* PawnData = LSPS->GetPawnData<ULSPawnData>())
 			{
 				return PawnData;
@@ -170,14 +171,14 @@ const ULSPawnData* ALSGameModeBase::GetPawnDataForController(const AController* 
 	}
 
 	// fall back to the default for the current experience
-	// ¾ÆÁ÷ PlayerState¿¡ PawnData°¡ ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀº °æ¿ì, ExperienceManagerComponentÀÇ CurrentExperience·Î ºÎÅÍ °¡Á®¿Í¼­ ¼³Á¤
+	// ì•„ì§ PlayerStateì— PawnDataê°€ ì„¤ì •ë˜ì–´ ìˆì§€ ì•Šì€ ê²½ìš°, ExperienceManagerComponentì˜ CurrentExperienceë¡œë¶€í„° ê°€ì ¸ì™€ì„œ ì„¤ì •
 	check(GameState);
 	ULSExperienceManagerComponent* ExperienceManagerComponent = GameState->FindComponentByClass<ULSExperienceManagerComponent>();
 	check(ExperienceManagerComponent);
 
 	if (ExperienceManagerComponent->IsExperienceLoaded())
 	{
-		// GetExperienceChecked ±¸Çö
+		// GetExperienceChecked êµ¬í˜„
 		const ULSExperienceDefinition* Experience = ExperienceManagerComponent->GetCurrentExperienceChecked();
 		if (Experience->DefaultPawnData)
 		{
@@ -185,6 +186,6 @@ const ULSPawnData* ALSGameModeBase::GetPawnDataForController(const AController* 
 		}
 	}
 
-	// ¾î¶°ÇÑ ÄÉÀÌ½º¿¡µµ ÇÚµé¸µÀÌ ¾ÈµÇ¾úÀ¸¸é nullptr
+	// ì–´ë– í•œ ì¼€ì´ìŠ¤ì—ë„ í•¸ë“¤ë§ ì•ˆë˜ì—ˆìœ¼ë©´ nullptr
 	return nullptr;
 }

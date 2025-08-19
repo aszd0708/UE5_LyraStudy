@@ -100,27 +100,18 @@ bool ULSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manage
 	{
 		if (!LSPS)
 		{
-			UE_LOG(LogLS, Error, TEXT("CurrentState == InitTags.InitState_Spawned LSPS Is Null"));
-		}
-
-		if (!LSPS)
-		{
 			return false;
 		}
-
 		return true;
 	}
 
 	// DataAvailable -> DataInitialized
 	if (CurrentState == InitTags.InitState_DataAvailable && DesiredState == InitTags.InitState_DataInitialized)
 	{
-		// PawnExtensionComponent가 DataInitialized 될 때까지 기다림 (== 모든 Feature Component가 DataAvailable인 상태)
-		// 진단 결과, Manager->HasFeatureReachedInitState() 호출은 RaceCondition을 유발하므로, OnActorInitStateChanged Delegate가 호출된 것 자체를 신뢰합니다.
-		if (!LSPS)
-		{
-			UE_LOG(LogLS, Error, TEXT("CurrentState == InitTags.InitState_DataAvailable LSPS Is Null"));
-		}
-		return LSPS != nullptr;
+		// PlayerState 유효성 검사를 HandleChangeInitState로 미룹니다.
+		// PawnExtensionComponent가 초기화되었다는 것을 신뢰하고 상태 변경을 허용합니다.
+		// PlayerState 리플리케이션 지연으로 인한 Race Condition을 해결하기 위함입니다.
+		return LSPS && Manager->HasFeatureReachedInitState(Pawn, ULSPawnExtensionComponent::NAME_ActorFeatureName, InitTags.InitState_DataInitialized);
 	}
 
 	// DataInitialized -> GameplayReady
@@ -135,7 +126,7 @@ bool ULSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manage
 
 void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
 {
-	UE_LOG(LogLS, Error, TEXT("ULSHeroComponent::HandleChangeInitState CurrentState : %s"), *CurrentState.ToString());
+	UE_LOG(LogLS, Log, TEXT("ULSHeroComponent::HandleChangeInitState trying to transition from %s to %s"), *CurrentState.ToString(), *DesiredState.ToString());
 
 	const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
 
@@ -149,21 +140,22 @@ void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Man
 			return;
 		}
 
-		// Input과 Camera에 대한 핸들링 (TODO)
-
-		const bool bIsLocallyController = Pawn->IsLocallyControlled();
-		const ULSPawnData* PawnData = nullptr;
-		if (ULSPawnExtensionComponent* PawnExtComp = ULSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+		if (Pawn->IsLocallyControlled())
 		{
-			PawnData = PawnExtComp->GetPawnData<ULSPawnData>();
-		}
-
-		if (bIsLocallyController && PawnData)
-		{
-			// 현재 LSCharacter에 Attach된 CameraComponent를 찾음
-			if (ULSCameraComponent* CameraComponent = ULSCameraComponent::FindCameraComponent(Pawn))
+			const bool bIsLocallyControlled = Pawn->IsLocallyControlled();
+			const ULSPawnData* PawnData = nullptr;
+			if (ULSPawnExtensionComponent* PawnExtComp = ULSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
 			{
-				CameraComponent->DeterminCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
+				PawnData = PawnExtComp->GetPawnData<ULSPawnData>();
+			}
+
+			if (bIsLocallyControlled && PawnData)
+			{
+				// 현재 HakCharacter에 Attach된 CameraComponent를 찾음
+				if (ULSCameraComponent* CameraComponent = ULSCameraComponent::FindCameraComponent(Pawn))
+				{
+					CameraComponent->DetermineCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
+				}
 			}
 		}
 	}
