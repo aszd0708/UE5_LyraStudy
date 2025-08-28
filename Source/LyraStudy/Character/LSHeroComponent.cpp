@@ -74,7 +74,6 @@ void ULSHeroComponent::OnActorInitStateChanged(const FActorInitStateChangedParam
 
 bool ULSHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
 {
-	UE_LOG(LogLS, Error, TEXT("ULSHeroComponent::CanChangeInitState CurrentState : %s"), *CurrentState.ToString());
 	check(Manager);
 
 	const FLSGameplayTags& InitTags = FLSGameplayTags::Get();
@@ -140,22 +139,19 @@ void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Man
 			return;
 		}
 
-		if (Pawn->IsLocallyControlled())
+		const bool bIsLocallyControlled = Pawn->IsLocallyControlled();
+		const ULSPawnData* PawnData = nullptr;
+		if (ULSPawnExtensionComponent* PawnExtComp = ULSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
 		{
-			const bool bIsLocallyControlled = Pawn->IsLocallyControlled();
-			const ULSPawnData* PawnData = nullptr;
-			if (ULSPawnExtensionComponent* PawnExtComp = ULSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
-			{
-				PawnData = PawnExtComp->GetPawnData<ULSPawnData>();
-			}
+			PawnData = PawnExtComp->GetPawnData<ULSPawnData>();
+		}
 
-			if (bIsLocallyControlled && PawnData)
+		if (bIsLocallyControlled && PawnData)
+		{
+			// 현재 HakCharacter에 Attach된 CameraComponent를 찾음
+			if (ULSCameraComponent* CameraComponent = ULSCameraComponent::FindCameraComponent(Pawn))
 			{
-				// 현재 HakCharacter에 Attach된 CameraComponent를 찾음
-				if (ULSCameraComponent* CameraComponent = ULSCameraComponent::FindCameraComponent(Pawn))
-				{
-					CameraComponent->DetermineCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
-				}
+				CameraComponent->DetermineCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
 			}
 		}
 	}

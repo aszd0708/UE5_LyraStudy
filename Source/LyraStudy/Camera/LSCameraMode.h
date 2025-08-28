@@ -11,6 +11,8 @@
 struct FLSCameraModeView
 {
 	FLSCameraModeView();
+
+	void Blend(const FLSCameraModeView& Other, float OtherWeight);
 	
 	FVector Location;
 	FRotator Rotation;
@@ -64,14 +66,14 @@ public:
 	FLSCameraModeView View;
 
 	/* Camera Mode의 FOV */
-	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "5.0", UIMax = "170", ClampMin = "5.0", ClampMax = "170.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "5.0", UIMax = "170", ClampMin = "5.0", Clampmax = "170.0"))
 	float FieldOfView;
 
 	/* View에 대한 Pitch [Min, Max] */
-	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "-89.0", UIMax = "89.0", ClampMin = "-89.0", ClampMax = "89.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "-89.9", UIMax = "89.9", ClampMin = "-89.9", Clampmax = "89.9"))
 	float ViewPitchMin;
 
-	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "-89.0", UIMax = "89.0", ClampMin = "-89.0", ClampMax = "89.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "View", Meta = (UIMin = "-89.9", UIMax = "89.9", ClampMin = "-89.9", Clampmax = "89.9"))
 	float ViewPitchMax;
 
 	/* 얼마동안 Blend를 진행할지 시간을 의미 */

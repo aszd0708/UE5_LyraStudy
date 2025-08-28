@@ -51,6 +51,7 @@ void ULSExperienceManagerComponent::ServerSetCurrentExperience(FPrimaryAssetId E
 	StartExperienceLoad();
 }
 
+PRAGMA_DISABLE_OPTIMIZATION
 void ULSExperienceManagerComponent::StartExperienceLoad()
 {
 	check(CurrentExperience);
@@ -89,23 +90,27 @@ void ULSExperienceManagerComponent::StartExperienceLoad()
 			BundlesToLoad.Add(UGameFeaturesSubsystemSettings::LoadStateServer);
 		}
 	}
-	
+
 	FStreamableDelegate OnAssetsLoadedDelegate = FStreamableDelegate::CreateUObject(this, &ThisClass::OnExperienceLoadComplete);
 	// 아래도, 후일 Bundle을 우리가 GameFeature에 연동하면서 더 깊게 알아보자, 지금은 B_LSDefaultExperience를 로딩해주는 함수로 생각
-	TSharedPtr<FStreamableHandle> Handle = AssetManager.ChangeBundleStateForPrimaryAssets(BundleAssetList.Array(), BundlesToLoad, {}, false, FStreamableDelegate(), FStreamableManager::AsyncLoadHighPriority);
+	TSharedPtr<FStreamableHandle> Handle = AssetManager.ChangeBundleStateForPrimaryAssets(
+		BundleAssetList.Array(),
+		BundlesToLoad,
+		{}, false, FStreamableDelegate(), FStreamableManager::AsyncLoadHighPriority);
 	
 	if (!Handle.IsValid() || Handle->HasLoadCompleted())
 	{
-		// 로딩이 완료되었으면, ExecuteDelegate를 통해 OnAssetsLoadedDelegate를 호출하자
+		// 로딩이 완료되었으면, ExecuteDelegate를 통해 OnAssetsLoadedDelegate를 호출하자:
+		// - 아래의 함수를 확인해보자:
 		FStreamableHandle::ExecuteDelegate(OnAssetsLoadedDelegate);
 	}
 	else
 	{
 		Handle->BindCompleteDelegate(OnAssetsLoadedDelegate);
-		Handle->BindCancelDelegate(FStreamableDelegate::CreateLambda([OnAssetsLoadedDelegate]() 
-		{
-			OnAssetsLoadedDelegate.ExecuteIfBound();
-		}));
+		Handle->BindCancelDelegate(FStreamableDelegate::CreateLambda([OnAssetsLoadedDelegate]()
+			{
+				OnAssetsLoadedDelegate.ExecuteIfBound();
+			}));
 	}
 
 	// FrameNumber를 주목해서 보자

@@ -13,6 +13,32 @@ FLSCameraModeView::FLSCameraModeView() : Location(ForceInit), Rotation(ForceInit
 {
 }
 
+void FLSCameraModeView::Blend(const FLSCameraModeView& Other, float OtherWeight)
+{
+	if (OtherWeight <= 0.0f)
+	{
+		return;
+	}
+	else if (OtherWeight >= 1.0f)
+	{
+		// Weight가 1.0이면 Other를 덮어쓰면 된다
+		*this = Other;
+		return;
+	}
+
+	// Location + OtherWeight * (Other.Location - Location);
+	Location = FMath::Lerp(Location, Other.Location, OtherWeight);
+
+	// Location과 같은 방식 Lerp (ControlRotation과 FieldOfView도 같음)
+	const FRotator DeltaRotation = (Other.Rotation - Rotation).GetNormalized();
+	Rotation = Rotation + (OtherWeight * DeltaRotation);
+
+	const FRotator DeltaControlRotation = (Other.ControlRotation - ControlRotation).GetNormalized();
+	ControlRotation = ControlRotation + (OtherWeight * DeltaControlRotation);
+
+	FieldOfView = FMath::Lerp(FieldOfView, Other.FieldOfView, OtherWeight);
+}
+
 
 ULSCameraMode::ULSCameraMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -284,4 +310,26 @@ void ULSCameraModeStack::UpdateStack(float DeltaTime)
 
 void ULSCameraModeStack::BlendStack(FLSCameraModeView& OutCameraModeView) const
 {
+	const int32 StackSize = CameraModeStack.Num();
+	if (StackSize <= 0)
+	{
+		return;
+	}
+
+	// CameraModeStack은 Bottom -> Top 순서로 Blend를 진행한다
+	const ULSCameraMode* CameraMode = CameraModeStack[StackSize - 1];
+	check(CameraMode);
+
+	// 참고로 가장 아래 (Bottom)은 BlendWeight가 1.0이다!
+	OutCameraModeView = CameraMode->View;
+
+	// 이미 Index = [StackSize - 1] 이미 OutCameraModeView로 지정했으므로, StackSize - 2부터 순회하면 된다
+	for (int32 StackIndex = (StackSize - 2); StackIndex >= 0; --StackIndex)
+	{
+		CameraMode = CameraModeStack[StackIndex];
+		check(CameraMode);
+
+		// HakCameraModeView Blend 함수를 구현하자:
+		OutCameraModeView.Blend(CameraMode->View, CameraMode->BlendWeight);
+	}
 }
