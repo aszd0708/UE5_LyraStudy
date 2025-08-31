@@ -4,10 +4,15 @@
 #include "Character/LSHeroComponent.h"
 #include "UObject/UObjectGlobals.h"
 #include "LSLogChannels.h"
+#include "PlayerMappableInputConfig.h"
+#include "EnhancedInputSubsystems.h"
+#include "Input/LSInputComponent.h"
+#include "Input/LSMappableConfigPair.h"
 #include "Character/LSPawnExtensionComponent.h"
 #include "Character/LSPawnData.h"
 #include "LSGameplayTags.h"
 #include "Player/LSPlayerState.h"
+#include "Player/LSPlayerController.h"
 #include "Components/GameFrameworkComponentManager.h"
 #include "Camera/LSCameraComponent.h"
 
@@ -154,6 +159,14 @@ void ULSHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Man
 				CameraComponent->DetermineCameraModeDelegate.BindUObject(this, &ThisClass::DetermineCameraMode);
 			}
 		}
+
+		if (LSPS)
+		{
+			if (Pawn->InputComponent != nullptr)
+			{
+				InitializePlayerInput(Pawn->InputComponent);
+			}
+		}
 	}
 }
 
@@ -184,5 +197,115 @@ TSubclassOf<ULSCameraMode> ULSHeroComponent::DetermineCameraMode() const
 		}
 	}
 	return nullptr;
+}
+void ULSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
+{
+	check(PlayerInputComponent);
+
+	const APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn)
+	{
+		return;
+	}
+
+	// LocalPlayer을 가져오기 위함
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	// EnhancedInputLocalPlayerSubsystem 을 가져오기 위함
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
+
+	// EnhancedInputLocalPlayerSubsystem에 MappingContext를 비워준다.
+	Subsystem->ClearAllMappings();
+
+	// PawnExtensionComponent -> PawnData -> InputConfig 존재 유무 판단
+	if (const ULSPawnExtensionComponent* PawnExtComp = ULSPawnExtensionComponent::FindPawnExtensionComponent(Pawn))
+	{
+		if (const ULSPawnData* PawnData = PawnExtComp->GetPawnData<ULSPawnData>())
+		{
+			if (const ULSInputConfig* InputConfig = PawnData->InputConfig)
+			{
+				const FLSGameplayTags& GameplayTags = FLSGameplayTags::Get();
+
+				// HeroComponent 가지고 있는 Input Mapping Context를 순회하며, EnhancedInputLocalPlayerSubsystem에 추가한다.
+				for (const FLSMappableConfigPair& Pair : DefaultInputConfigs)
+				{
+					if (Pair.bShouldActivateAutomatically)
+					{
+						FModifyContextOptions Options = {};
+						Options.bIgnoreAllPressedKeysUntilRelease = false;
+
+						// 내부적으로 Input Mapping Context를 추가한다.
+						// - AddPlayerMappableConfig를 간단히 보는 것을 추천
+						Subsystem->AddPlayerMappableConfig(Pair.Config.LoadSynchronous(), Options);
+					}
+				}
+
+				ULSInputComponent* LSIC = CastChecked<ULSInputComponent>(PlayerInputComponent);
+				{
+					// InputTag_Move와 InputTag_Look_Mouse에 대해 각각 Input_Move()와 Input_LookMouse() 멤버 함수에 바인딩 시킨다.
+					// - 바인딩한 이후, Input 이벤트에 따라 멤버 함수가 트리거 된다
+					LSIC->BindNativeAction(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, false);
+					LSIC->BindNativeAction(InputConfig, GameplayTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_LookMouse, false);
+				}
+			}
+		}
+	}
+}
+void ULSHeroComponent::Input_Move(const FInputActionValue& InputActionValue)
+{
+	APawn* Pawn = GetPawn<APawn>();
+	AController* Controller = Pawn ? Pawn->GetController() : nullptr;
+
+	if (Controller)
+	{
+		const FVector2D Value = InputActionValue.Get<FVector2D>();
+		const FRotator MovementRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
+
+		if (Value.X != 0.0f)
+		{
+			// Left/Right -> X 값에 들어있음.
+			// MovementDirection은 현재 카메라의 RightVector를 의미함 (World-Space)
+			const FVector MovementDirection = MovementRotation.RotateVector(FVector::RightVector);
+
+			// AddMovementInput 함수를 한번 보자:
+			// - 내부적으로 MovementDirection * Value.X 를 MovementCOmponent에 적용 해준다
+			Pawn->AddMovementInput(MovementDirection, Value.X);
+		}
+
+		if (Value.Y != 0.0f)
+		{
+			// 앞서 Left/Right 와 마찬가지로 Forward/Backward를 적용한다.
+			const FVector MovementDirection = MovementRotation.RotateVector(FVector::ForwardVector);
+			Pawn->AddMovementInput(MovementDirection, Value.Y);
+		}
+	}
+}
+void ULSHeroComponent::Input_LookMouse(const FInputActionValue& InputActionValue)
+{
+	APawn* Pawn = GetPawn<APawn>();
+	if (!Pawn) 
+	{
+		return;
+	}
+
+	const FVector2D Value = InputActionValue.Get<FVector2D>();
+	if (Value.X != 0.0f)
+	{
+		// X에는 Yaw값이 있음.
+		// - Camera에 대해 Yaw 적용
+		Pawn->AddControllerYawInput(Value.X);
+	}
+
+	if (Value.Y != 0.0f)
+	{
+		// Y에는 Pitch값이 있음.
+		double AnimInversionValue = -Value.Y;
+		Pawn->AddControllerPitchInput(AnimInversionValue);
+	}
 }
 PRAGMA_ENABLE_OPTIMIZATION

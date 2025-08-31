@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "Components/PawnComponent.h"
 #include "Components/GameFrameworkInitStateInterface.h"
+#include "Input/LSMappableConfigPair.h"
 #include "LSHeroComponent.generated.h"
 
 class ULSCameraMode;
+struct FInputActionValue;
 
 /**
  * 카메라, 입력 등 플레이어가 제어하는 시스템의 초기화를 처리하는 컴포넌트
@@ -41,4 +43,12 @@ public:
 
 	/* member methods */
 	TSubclassOf<ULSCameraMode> DetermineCameraMode() const;
+	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
+
+	void Input_Move(const FInputActionValue& InputActionValue);
+	void Input_LookMouse(const FInputActionValue& InputActionValue);
+
+	/* member variables */
+	UPROPERTY(EditAnywhere)
+	TArray<FLSMappableConfigPair> DefaultInputConfigs;
 };

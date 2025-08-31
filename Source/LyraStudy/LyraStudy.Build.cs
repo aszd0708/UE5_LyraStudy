@@ -18,6 +18,9 @@ public class LyraStudy : ModuleRules
             // GameFeature,
             "ModularGameplay",
             "GameFeatures",
+            // Input
+            "InputCore",
+            "EnhancedInput"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
