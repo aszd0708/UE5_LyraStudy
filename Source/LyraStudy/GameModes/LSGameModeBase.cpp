@@ -11,6 +11,7 @@
 #include "Character/LSCharacter.h"
 #include "Character/LSPawnData.h"
 #include "Character/LSPawnExtensionComponent.h"
+#include <Kismet/GameplayStatics.h>
 
 ALSGameModeBase::ALSGameModeBase()
 {
@@ -103,6 +104,14 @@ void ALSGameModeBase::HandleMatchAssignmentIfNotExpectingOne()
 	// - default experience
 
 	UWorld* World = GetWorld();
+	
+	// 우리가 앞서, RUL과 함께 ExtraArgs로 넘겼던 정보는 OptionsString에 저장돼있다.
+	if (!ExperienceId.IsValid() && UGameplayStatics::HasOption(OptionsString, TEXT("Experience")))
+	{
+		// Experience의 Value를 가져와서 PrimaryAssetId를 생성해준다. 이때, LSExperienceDefinition의 Class 이름을 사용한다.
+		const FString ExperienceFormOptions = UGameplayStatics::ParseOption(OptionsString, TEXT("Experience"));
+		ExperienceId = FPrimaryAssetId(FPrimaryAssetType(ULSExperienceDefinition::StaticClass()->GetFName()), FName(*ExperienceFormOptions));
+	}
 
 	// fall back to the default experience
 	// 일단 기본 옵션으로 default하게 B_HakDefaultExperience로 설정놓자
