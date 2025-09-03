@@ -30,5 +30,5 @@ public:
 	- 후일 ShooterCore 관련 Playin 작업을 할 경우, 진행하게 될 예정이다
 	*/
 	UPROPERTY(EditDefaultsOnly, Category = GamePlay)
-	TArray<FString> GameFeatureToEnable;
+	TArray<FString> GameFeaturesToEnable;
 };

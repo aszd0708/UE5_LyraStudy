@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/GameStateComponent.h"
+#include "GameFeaturePluginOperationResult.h"
 #include "LSExperienceManagerComponent.generated.h"
 
 struct FPrimaryAssetId;
@@ -13,6 +14,7 @@ enum class ELSExperienceLoadState
 {
 	Unloaded,
 	Loading,
+	LoadingGameFeatures,
 	Loaded,
 	Deactivating,
 };
@@ -43,6 +45,7 @@ public:
 
 	void StartExperienceLoad();
 	void OnExperienceLoadComplete();
+	void OnGameFeaturePluginLoadComplete(const UE::GameFeatures::FResult& Result);
 	void OnExperienceFullLoadCompleted();
 	const ULSExperienceDefinition* GetCurrentExperienceChecked() const;
 
@@ -55,4 +58,8 @@ public:
 
 	/* Experience 로딩이 완료된 이후, Broadcasting Delegate */
 	FOnLSExperienceLoaded OnExperienceLoaded;
+
+	/* 활성화된 GameFeature Plug들 */
+	int32 NumGameFeaturePluginsLoading = 0;
+	TArray<FString> GameFeaturePluginURLs;
 };
