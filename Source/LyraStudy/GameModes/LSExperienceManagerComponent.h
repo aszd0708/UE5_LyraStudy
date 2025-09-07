@@ -15,6 +15,7 @@ enum class ELSExperienceLoadState
 	Unloaded,
 	Loading,
 	LoadingGameFeatures,
+	ExecutingActions,
 	Loaded,
 	Deactivating,
 };

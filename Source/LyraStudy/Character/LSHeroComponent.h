@@ -25,6 +25,9 @@ public:
 	/* FeatureName 정의 */
 	static const FName NAME_ActorFeatureName;
 
+	/* Extension Event 이름 정의 */
+	static const FName NAME_BindInputsNow;
+
 	/*
 	* UComponent interface
 	*/

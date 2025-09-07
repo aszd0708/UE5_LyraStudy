@@ -7,6 +7,8 @@
 #include "System/LSAssetManager.h"
 #include "LSExperienceDefinition.h"
 #include "LSLogChannels.h"
+#include "LSExperienceActionSet.h"
+#include "GameFeatureAction.h"
 
 void ULSExperienceManagerComponent::CallOrRegister_OnExperienceLoaded(FOnLSExperienceLoaded::FDelegate&& Delegate)
 {
@@ -180,6 +182,45 @@ void ULSExperienceManagerComponent::OnGameFeaturePluginLoadComplete(const UE::Ga
 void ULSExperienceManagerComponent::OnExperienceFullLoadCompleted()
 {
 	check(LoadState != ELSExperienceLoadState::Loaded);
+
+	// GameFeature Plugin의 로딩과 활성화 이후, GameFeature Action들을 활성화 시키자:
+	{
+		LoadState = ELSExperienceLoadState::ExecutingActions;
+
+		// GameFeatureAction 활성화를 위한 Context 준비
+		FGameFeatureActivatingContext Context;
+		{
+			// 월드의 핸들을 세팅해준다
+			const FWorldContext* ExistingWorldContext = GEngine->GetWorldContextFromWorld(GetWorld());
+			if (ExistingWorldContext)
+			{
+				Context.SetRequiredWorldContextHandle(ExistingWorldContext->ContextHandle);
+			}
+		}
+
+		auto ActivateListOfActions = [&Context](const TArray<UGameFeatureAction*>& ActionList)
+			{
+				for (UGameFeatureAction* Action : ActionList)
+				{
+					// 명시적으로 GameFeatureAction에 대해 Registering -> Loading -> Activating 순으로 호출한다
+					if (Action)
+					{
+						Action->OnGameFeatureRegistering();
+						Action->OnGameFeatureLoading();
+						Action->OnGameFeatureActivating(Context);
+					}
+				}
+			};
+
+		// 1. Experience의 Actions
+		ActivateListOfActions(CurrentExperience->Actions);
+
+		// 2. Experience의 ActionSets
+		for (const TObjectPtr<ULSExperienceActionSet>& ActionSet : CurrentExperience->ActionSets)
+		{
+			ActivateListOfActions(ActionSet->Actions);
+		}
+	}
 
 	LoadState = ELSExperienceLoadState::Loaded;
 	OnExperienceLoaded.Broadcast(CurrentExperience);

@@ -7,6 +7,9 @@
 #include "LyraStudy/Character/LSPawnData.h"
 #include "LSExperienceDefinition.generated.h"
 
+class ULSExperienceActionSet;
+class UGameFeatureAction;
+
 /**
  * 
  */
@@ -31,4 +34,12 @@ public:
 	*/
 	UPROPERTY(EditDefaultsOnly, Category = GamePlay)
 	TArray<FString> GameFeaturesToEnable;
+
+	/* ExperienceActionSet은 UGameFeatureAction의 Set이며, Gameplay 용도에 맞게 분류의 목적으로 사용 */
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	TArray<TObjectPtr<ULSExperienceActionSet>> ActionSets;
+
+	/* 일반적인 GameFeatureAction 으로서 추가 */
+	UPROPERTY(EditDefaultsOnly, Category = "Actions")
+	TArray<TObjectPtr<UGameFeatureAction>> Actions;
 };

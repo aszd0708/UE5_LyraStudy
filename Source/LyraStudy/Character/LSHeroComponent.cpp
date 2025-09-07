@@ -19,6 +19,9 @@
 /* FeatureName 정의  : static member vaiable 초기화 */
 const FName ULSHeroComponent::NAME_ActorFeatureName("Hero");
 
+/* InputConfig의 GameFeatureAction 활성화 ExtensionEvent 이름 */
+const FName ULSHeroComponent::NAME_BindInputsNow("BindInputsNow");
+
 ULSHeroComponent::ULSHeroComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bStartWithTickEnabled = false;
@@ -255,6 +258,9 @@ void ULSHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompone
 			}
 		}
 	}
+
+	// GameFeatureAction_AddInputConfig의 HandlePawnExtension 콜백 함수 전달
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APawn*>(Pawn), NAME_BindInputsNow);
 }
 void ULSHeroComponent::Input_Move(const FInputActionValue& InputActionValue)
 {
