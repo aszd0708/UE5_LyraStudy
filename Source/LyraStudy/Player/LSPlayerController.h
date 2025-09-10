@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerController.h"
+#include "ModularPlayerController.h"
 #include "LSPlayerController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LYRASTUDY_API ALSPlayerController : public APlayerController
+class LYRASTUDY_API ALSPlayerController : public AModularPlayerController
 {
 	GENERATED_BODY()
 	

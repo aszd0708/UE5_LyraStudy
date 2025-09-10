@@ -18,6 +18,7 @@ public class LyraStudy : ModuleRules
             // GameFeature,
             "ModularGameplay",
             "GameFeatures",
+            "ModularGameplayActors",
             // Input
             "InputCore",
             "EnhancedInput",
