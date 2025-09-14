@@ -43,6 +43,14 @@ struct FLSCharacterPartList
 	{
 	}
 
+	bool SpawnActorForEntry(FLSAppliedCharacterPartEntry& Entry);
+	void DestroyActorForEntry(FLSAppliedCharacterPartEntry& Entry);
+
+	FLSCharacterPartHandle AddEntry(FLSCharacterPart NewPart);
+	void RemoveEntry(FLSCharacterPartHandle Handle);
+
+	FGameplayTagContainer CollectCombinedTags() const;
+
 	/** 현재 인스턴스화된 Character Part */
 	UPROPERTY()
 	TArray<FLSAppliedCharacterPartEntry> Entries;
@@ -65,10 +73,18 @@ class LYRASTUDY_API ULSPawnComponent_CharacterParts : public UPawnComponent
 
 public:
 	ULSPawnComponent_CharacterParts(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	USkeletalMeshComponent* GetParentMeshComponent() const;
+	USceneComponent* GetSceneComponentToAttachTo() const;
+	FGameplayTagContainer GetCombinedTags(FGameplayTag RequiredPrefix) const;
+	void BroadcastChanged();
+
+	FLSCharacterPartHandle AddCharacterPart(const FLSCharacterPart& NewPart);
+	void RemoveCharacterPart(FLSCharacterPartHandle Handle);
 	
 	/* 인스턴스화 된 Character Parts */
 	UPROPERTY()
-	FLSCharacterPartList ChracterPartList;
+	FLSCharacterPartList CharacterPartList;
 
 	/* 애니메이션 적용을 위한 메시와 연결고리 */
 	UPROPERTY(EditAnywhere, Category = Cosmetics)
