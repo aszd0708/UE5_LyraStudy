@@ -7,6 +7,31 @@
 #include "LSCosmeticAnimationTypes.generated.h"
 
 USTRUCT(BlueprintType)
+struct FLSAnimLayerSelectionEntry
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UAnimInstance> LayerRules;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTagContainer RequiredTags;
+};
+
+USTRUCT(BlueprintType)
+struct FLSAnimLayerSelectionSet
+{
+	GENERATED_BODY()
+
+	/* 앞서 보았던 LSAnimBodyStyleSelection읠 MeshRule과 같이 AnimInstance의 Rule을 가진 LayerRules로 생각하면 됨 */
+	TArray<FLSAnimLayerSelectionEntry> LayerRules;
+
+	/* 디폴트 Layer */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UAnimInstance> DefaultLayer;
+};
+
+USTRUCT(BlueprintType)
 struct FLSAnimBodyStyleSelectionEntry
 {
 	GENERATED_BODY()
