@@ -3,3 +3,6 @@
 
 #include "Equipment/LSEquipmentInstance.h"
 
+ULSEquipmentInstance::ULSEquipmentInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+}
