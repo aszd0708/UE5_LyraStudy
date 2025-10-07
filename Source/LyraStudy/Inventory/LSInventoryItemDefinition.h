@@ -21,7 +21,7 @@ public:
 };
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class LYRASTUDY_API ULSInventoryItemDefinition : public UObject
 {
 	GENERATED_BODY()

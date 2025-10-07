@@ -28,6 +28,8 @@ struct FLSInventoryList
 	{
 	}
 
+	ULSInventoryItemInstance* AddEntry(TSubclassOf<ULSInventoryItemDefinition> ItemDef);
+
 	UPROPERTY()
 	TArray<FLSInventoryEntry> Entries;
 
@@ -46,6 +48,10 @@ class LYRASTUDY_API ULSInventoryManagerComponent : public UActorComponent
 	
 public:	
 	ULSInventoryManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	/* InventroyItemDefinition을 통해, InventoryList에 추가하여 관리하며, InventoryItemInstance를 반환한다. */
+	UFUNCTION(BlueprintCallable, Category = Inventory)
+	ULSInventoryItemInstance* AddItemDefinition(TSubclassOf<ULSInventoryItemDefinition> ItemDef);
 
 	UPROPERTY()
 	FLSInventoryList InventoryList;

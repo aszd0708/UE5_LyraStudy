@@ -12,4 +12,6 @@ class ULSInventoryFragment_EquippableItem : public ULSInventoryItemFragment
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(EditAnywhere, Category = LS)
+	TSubclassOf<ULSEquipmentDefinition> EquipmentDefinition;
 };

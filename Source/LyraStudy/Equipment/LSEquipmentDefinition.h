@@ -29,7 +29,7 @@ struct FLSEquipmentActorToSpawn
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class LYRASTUDY_API ULSEquipmentDefinition : public UObject
 {
 	GENERATED_BODY()

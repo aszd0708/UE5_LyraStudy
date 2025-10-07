@@ -25,6 +25,11 @@ class LYRASTUDY_API ULSQuickBarComponent : public UControllerComponent
 public:
 	ULSQuickBarComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	void AddItemToSlot(int32 SlotIndex, ULSInventoryItemInstance* Item);
+
 	/** HUD QuickBar Slot °¹¼ö */
 	UPROPERTY()
 	int32 NumSlots = 3;
