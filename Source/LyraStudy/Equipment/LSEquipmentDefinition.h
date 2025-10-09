@@ -43,5 +43,5 @@ public:
 
 	/* 해당 장착 아이템을 사용하면, 어떤 Actor가 Spawn이 되는지 정보를 담고 있다. */
 	UPROPERTY(EditDefaultsOnly, Category = Equipment)
-	TArray<FLSEquipmentActorToSpawn> ActorToSpawn;
+	TArray<FLSEquipmentActorToSpawn> ActorsToSpawn;
 };

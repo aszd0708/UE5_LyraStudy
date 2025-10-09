@@ -10,7 +10,7 @@ class ULSEquipmentDefinition;
 class ULSEquipmentInstance;
 
 USTRUCT(BlueprintType)
-struct FLSAppliedEqupmentEntry
+struct FLSAppliedEquipmentEntry
 {
 	GENERATED_BODY()
 
@@ -38,9 +38,12 @@ struct FLSEquipmentList
 
 	}
 
+	ULSEquipmentInstance* AddEntry(TSubclassOf<ULSEquipmentDefinition> EquipmentDefinition);
+	void RemoveEntry(ULSEquipmentInstance* Instance);
+
 	/* 창작물에 대한 관리 리스트 */
 	UPROPERTY()
-	TArray<FLSAppliedEqupmentEntry> Entries;
+	TArray<FLSAppliedEquipmentEntry> Entries;
 
 	UPROPERTY()
 	TObjectPtr<UActorComponent> OwnerComponent;
@@ -57,6 +60,9 @@ class LYRASTUDY_API ULSEquipementManagerComponent : public UPawnComponent
 
 public:
 	ULSEquipementManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	ULSEquipmentInstance* EquipItem(TSubclassOf<ULSEquipmentDefinition> EquipmentDefinition);
+	void UnequipItem(ULSEquipmentInstance* ItemInstance);
 
 	UPROPERTY()
 	FLSEquipmentList EquipmentList;
